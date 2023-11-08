@@ -47,7 +47,8 @@ An RFC can exist in four different stages:
   maintainers are committing to adding it to Electron.** If a new development causes an Active
   RFC to become unnecessary in any way, maintainers can choose to ultimately reject it.
 - **Completed:** Once the implementation for an Active RFC is merged into Electron’s `main` branch
-  and is slated for an upcoming release, it is marked as Completed.
+  and is slated for an upcoming release, it is marked as Completed with a PR to `electron/rfcs`
+  containing the status change and a link to the `electron/electron` commit and target Electron release.
 - **Declined:** A Proposed RFC can be marked as Declined by maintainers after public discussion. When
   a proposal is declined, a maintainer should add a comment summarizing the reasons for the decision
   and close out the pull request.
