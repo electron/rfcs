@@ -42,7 +42,7 @@ An RFC can exist in four different stages:
   merge into the `rfcs` repo to move the RFC to the Active stage or close the pull request to mark
   it as Declined.
 - **Active:** An RFC is Active once it is merged into the `electron/rfcs` repository. An
-  implementation PR can be opened in `electron/electron` as a technical reference.
+  implementation PR(s) can be opened in `electron/electron` as a technical reference.
   **An Active RFC means that the idea is worth being implemented and explored, not that the
   maintainers are committing to adding it to Electron.** If a new development causes an Active
   RFC to become unnecessary in any way, maintainers can choose to ultimately reject it.
