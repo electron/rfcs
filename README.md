@@ -45,7 +45,7 @@ An RFC can exist in four different stages:
   implementation PR(s) can be opened in `electron/electron` as a technical reference.
   **An Active RFC means that the idea is worth being implemented and explored, not that the
   maintainers are committing to adding it to Electron.** If a new development causes an Active
-  RFC to become unnecessary in any way, maintainers can choose to ultimately reject it.
+  RFC to become unnecessary in any way, maintainers can choose to ultimately decline it.
 - **Completed:** Once the implementation for an Active RFC is merged into Electron’s `main` branch
   and is slated for an upcoming release, it is marked as Completed with a PR to `electron/rfcs`
   containing the status change and a link to the `electron/electron` commit and target Electron release.
@@ -93,7 +93,7 @@ An RFC can exist in four different stages:
 ## RFC review
 
 **Feedback on Proposed RFCs is open to the community**, although Electron’s API working group will make
-the ultimate decision regarding their acceptance or rejection. Depending on the nature of the proposal,
+the ultimate decision regarding their accepting or declining the proposed RFC. Depending on the nature of the proposal,
 additional working groups in Electron Governance may be tagged to review the RFC as well.
 
 The API WG cannot commit to a timeline for reviewing all RFC proposals, but will try to read each
