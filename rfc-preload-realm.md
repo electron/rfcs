@@ -10,7 +10,7 @@ Preload realms provide an isolated context to run JavaScript prior to
 code evaluating in another context. This expands functionality of 
 Electron's preload scripts to provide new context targets. This proposal
 intends to target Service Worker contexts with potential plans for new
-contexts (dedicated worker, shared worker) in future proposals.
+contexts (web workers, shared workers) in future proposals.
 
 ## Motivation
 
@@ -20,7 +20,7 @@ Expanding preload scripts to allow targeting of new contexts such as Service Wor
 
 In addition, others have expressed desire for preload support in worker contexts:
 - https://github.com/electron/electron/issues/28620
-  > there is no way to fix issues like Electron's broken atob/btoa implementation, or hiding APIs such as battery/keyboard/gpuinfo from being accessed
+  > there is no way to fix issues like Electron's broken atob/btoa implementation, or hiding APIs such as battery/keyboard/gpuinfo from being accessed [...] in workers
 - https://github.com/electron/electron/issues/39848
   > `nodeIntegrationInWorker: true` does not cause loading of preload script in workers
 
@@ -28,7 +28,7 @@ Although the initial goal of this RFC is to support Service Workers, I anticipat
 
 ## Guide-level explanation
 
-A preload realm is an isolated JavaScript context—without access to the DOM—which exists beside a worker context. It offers a way to safely interact with the worker context in order to add new APIs which can communicate with Electron's main process.
+A preload realm is an isolated JavaScript context—without access to the DOM—which exists alongside a worker context. It offers a way to safely interact with the worker context in order to add new APIs which can communicate with Electron's main process.
 
 This functionality can be used to transform network requests, prototype new extension APIs, or enable a new method of background data synchronization to name a few use cases.
 
@@ -64,7 +64,7 @@ function exposeApi() {
 
   // Expose our API in the JS context which initiated the creation of this
   // preload realm.
-  contextBridge.exposeInInitiatorContext('myElectronApi', api);
+  contextBridge.exposeInInitiatorWorld('myElectronApi', api);
 }
 ```
 
@@ -92,7 +92,7 @@ const { ipcMain } = require('electron');
 // Handle the IPC sent from the service worker preload realm.
 ipcMain.handle('SUMMARIZE_TEXT', (event, text) => {
   // We want to validate that our IPC was sent from an extension running in a
-  // service worker context and that the text is of the expected data type.
+  // service worker context and that the text is of the expected type.
   const isValid = (event.senderType === 'service-worker') &&
     event.sender.url.startsWith('chrome-extension:') &&
     typeof text === 'string';
@@ -147,35 +147,55 @@ A **preload realm** is an isolated `v8::Context` which is created in response to
 [ShadowRealms](https://github.com/tc39/proposal-shadowrealm/blob/main/explainer.md) are an ECMAScript TC39 Stage 3 proposal which introduces the ability to create new isolated contexts from any existing JS context. Although not yet finalized, there's an existing implementation available in V8 and Chromium which can be used as a reference.
 
 > [!NOTE]
-> To test ShadowRealms in Electron, a V8 flag can be added.
+> It's possible to test ShadowRealms in Electron by adding a V8 flag:
 > ```js
 > app.commandLine.appendSwitch('js-flags', '--harmony-shadow-realm');
 > ```
 
-In Chromium, an [implementation to a V8 hook named `OnCreateShadowRealmV8Context` is provided.](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/bindings/core/v8/shadow_realm_context.cc;l=63;drc=f092aac6779095fcb906f43fdcd223cd7148483f) In this hook, a new `v8::Context` is created with a `ShadowRealmGlobalScope` blink execution context. Using blink APIs allows the context to interact with debugger agents to provide a DevTools debugging experience-although not currently supported in Chrome.
+In Chromium, an [implementation for a V8 hook named `OnCreateShadowRealmV8Context` is provided.](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/bindings/core/v8/shadow_realm_context.cc;l=63;drc=f092aac6779095fcb906f43fdcd223cd7148483f) In this hook, a new `v8::Context` is created with a `ShadowRealmGlobalScope` blink execution context. Using blink APIs would allow the context to interact with debugger agents to provide a DevTools debugging experience-although not currently exposed in Chrome.
 
 The implementation of ShadowRealms provides a basis for the design of Preload Realms.
 
+### Preload realm scripts
+
+TODO
+- adding to session
+- synchronous IPC to gather scripts
+
 ### `contextBridge`
 
-While preload scripts run in a context where isolated worlds are an established context, worlds are a concept not yet introduced to APIs such as web workers and service workers.
+A preload realm interacts between an initiator context and the preload realm context. The goal of bridging objects between two contexts remains the same, but may require new terminologies. A "main world" might not make sense for workers so I've elected to use "initiator world" instead.
 
-A preload realm interacts between an initiator context and the preload realm context. The goal of bridging objects between two contexts remains the same, but may require new terminologies.
+In the case of render frames, `webFrame.executeJavaScript` exists as a way to evaluate JS in the main world. Workers will require the same functionality which could be added without introducing another top-level module.
 
 ```ts
 interface ContextBridge {
-  exposeInInitiatorContext(key: string, api: any);
-  evaluateInInitiatorContext(code: string);
+  exposeInInitiatorWorld(key: string, api: any);
+  evaluateInInitiatorWorld(code: string);
 }
 ```
 
+To avoid hard crashes while invoking existing methods (ie. `exposeInMainWorld`), they can be modified to throw if the current V8 context isn't associated with a render frame.
+
 ### `ipcRenderer` / `ipcMain`
 
-TODO
+IPCs in Electron have historically only been transmitted between the main process and render frames in renderer processes.
 
-### Session preload scripts
+While web workers can exist in the same process as render frames, service workers live in their own process on a worker thread. IPC handlers in the main process will need to be aware of multiple types of senders for messages received.
 
-TODO
+```ts
+/** JS wrapper around ServiceWorkerHost. */
+class ServiceWorkerMain {
+  /** Script URL running in the SW */
+  url: string;
+  /** IPC interface */
+  ipc: IpcMainImpl;
+}
+
+interface IpcServiceWorkerEvent {
+  sender: ServiceWorkerMain;
+}
+```
 
 - new `v8::Context`
 - use of `ShadowRealmGlobalScope`
@@ -188,13 +208,43 @@ TODO
 
 ## Drawbacks
 
-- May require all apps to adapt to new IPC patterns.
-  - Previously all IPCs dealt with render frames.
-- Blink internals usage
-  - Maintenence burdon
-  - Oilpan GC vs V8 GC
-- Only targeting sandboxed contexts for now
-- no setTimeout in preload realm
+### Increased IPC complexity
+
+Electron users will now need to be aware of multiple types of senders. The approach we decide ipcMain's TypeScript types will determine whether it requires breaking changes.
+
+```diff
+interface IpcMainEvent {
+  // Breaks existing code
+-  sender: WebContents;
++  sender: WebContents | ServiceWorkerMain;
+}
+```
+
+Internal changes will also need to abandon assuming a render frame is always the sender. `ElectronApiIPCHandlerImpl` assumes render frames are used which will require changes.
+
+### Blink internals usage
+
+Some parts of Electron's code are already aware of Blink's ExecutionContexts.
+
+```cpp
+// shell/renderer/electron_renderer_client.cc
+auto* ec = blink::ExecutionContext::From(context);
+if (ec->IsServiceWorkerGlobalScope() || ec->IsSharedWorkerGlobalScope() ||
+    ec->IsMainThreadWorkletGlobalScope())
+  return;
+```
+
+By introducing Preload Realms, we may need to add additional checks for `IsShadowRealmGlobalScope()` or `IsPreloadRealmGlobalScope()`-the latter depending on how much we patch Blink.
+
+Additionally, the setup code ShadowRealm's V8 Context relies on Blink's Oilpan GC ([see implementation](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/bindings/core/v8/shadow_realm_context.cc;l=63;drc=f092aac6779095fcb906f43fdcd223cd7148483f)). Whether we can switch to using V8/Gin's GC instead is yet to be seen.
+
+### Lack of DOM APIs
+
+The ShadowRealm proposal is currently stalled due to lack of consensus on which DOM APIs should be made available in the ShadowRealmGlobalScope (https://github.com/tc39/proposal-shadowrealm/issues/284). This might be a new concept for consumers of preload realms. Common APIs we typically think of as JavaScript-native are missing such as `setTimeout` and `setInterval`.
+
+This could be addressed if necessary. Introducing our own `PreloadRealmGlobalScope` and exposing APIs via WebIDL's [`[Exposed]`](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/bindings/IDLExtendedAttributes.md#Exposed) attribute is possible via patching.
+
+It's worth noting that there's already an effort to expose some DOM APIs to all contexts via [`[Exposed=*]`](https://github.com/whatwg/webidl/pull/526).
 
 ## Rationale and alternatives
 
@@ -212,19 +262,62 @@ TODO
 - Maintenance debt and risk of using Blink internals.
 
 ### Alternatives
-- RendererPreloadWorklet
-  - Worklet responsible for deciding whether to inject preload
-    into a context.
-  - Could deprecate nodeIntegrationIn* APIs
-  - Adopts web standards
-  - importScript()
+
+#### `RendererPreloadWorklet`
+
+[Worklets](https://developer.mozilla.org/en-US/docs/Web/API/Worklet) are a relatively new component of the web. Now used for single-purpose processes such as painting, layout, and audio computation.
+
+Electron could provide its own worklet for deciding when and what to inject as a preload script.
+
+```js
+// Register a uniquely named preload type. This allows for extensibility
+// from plugins.
+registerPreload('extensionApi', class {
+  /**
+   * Target one or more contexts.
+   * Possible values could be:
+   *    main-frame, sub-frame, web-worker, service-worker
+   */
+  static get targetContexts() { return ['service-worker']; }
+
+  /**
+   * Filter based on URL of the context. 
+   */
+  static get urlPatterns() { return ['chrome-extension://*']; }
+
+  /**
+   * One or more relative path scripts to be injected.
+   */
+  static get scripts() {
+    return [
+      'setup-script.js',
+      'relative-script.js'
+    ];
+  }
+
+  // OR could allow more flexibility and provide APIs similar to ShadowRealm
+  // proposal.
+  handleContext(context) {
+    context.importScript('setup-script.js');
+    context.importScript('relative-script.js');
+  }
+});
+```
+
+A approach like above would allow us to eliminate all `nodeIntegrationIn*` APIs
+which have been a source of confusion for some users (see [issues with nodeIntegrationInSubFrames](https://github.com/electron/electron/issues/22582)).
 
 ## Prior art
 
-- Preloads for Web Workers
-  https://github.com/electron/electron/pull/28923
-  - No context isolation
-- ShadowRealm
+### Preloads for Web Workers
+
+Previously existed in Electron, however, never was introduced with context isolation support.
+
+[A PR was created](https://github.com/electron/electron/pull/28923) without support for context isolation which ultimately led to its rejection.
+
+### ShadowRealms
+
+See above in the reference-level guide.
 
 ## Unresolved questions
 
@@ -236,8 +329,10 @@ TODO
   PreloadRealmGlobalScope?
 - Maybe we stick with "preload scripts" instead of "preload realms"
 - Service Worker wake/sleep
+- Only supported in sandboxed browsers?
 
 ## Future possibilities
 
-- Preload realms for web worker
-  - Worklets?
+- Preload realms for web workers and shared workers
+  - After an initial implementation of support for service workers,
+    this should be better understood.
