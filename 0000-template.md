@@ -41,7 +41,7 @@ This is the technical portion of the RFC. Explain the design in sufficient detai
 - Its interaction with other features is clear.
 - It is reasonably clear how the feature would be implemented.
 - Corner cases are dissected by example.
-- Any dependencies on new Chromium code are outlined.
+- Any new dependencies on Chromium code are outlined.
 
 The section should return to the examples given in the previous section, and explain more fully how
 the detailed proposal makes those examples work.
