@@ -14,7 +14,7 @@ One paragraph explanation of the feature.
 
 ## Motivation
 
-Why are we doing this? What use cases does it support? What is the expected outcome?
+Why should we do this? What use cases does it support? What is the expected outcome?
 
 ## Guide-level explanation
 
