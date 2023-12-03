@@ -36,7 +36,7 @@ To demonstrate the API, we'll take a look at how we can use Preload Realms to pr
 
 ### Creating a new extension API
 
-Chrome's Manifest V3 extensions provide event routing and browser APIs through a [background service worker.](https://developer.chrome.com/docs/extensions/mv3/service_workers/) While leveraging the existing APIs provided by Chrome, we can add our own to extend its full set of functionality.
+Chrome's Manifest V3 extensions provide event routing and browser APIs through a [background service worker.](https://developer.chrome.com/docs/extensions/mv3/service_workers/) While leveraging the existing extension APIs provided by Chrome, we can add our own to extend its full set of functionality.
 
 Given the recent rise of generative AI, we'll look at how we might offer extensions the ability to summarize text using one in Electron.
 
@@ -144,7 +144,7 @@ A **preload realm** is an isolated `v8::Context` which is created in response to
 
 #### ShadowRealm proposal
 
-[ShadowRealms](https://github.com/tc39/proposal-shadowrealm/blob/main/explainer.md) are an ECMAScript TC39 Stage 3 proposal which introduces the ability to create new isolated contexts from any existing JS context. Although not yet finalized, there's an existing implementation available in V8 and Chromium which can be used as a reference.
+[ShadowRealms](https://github.com/tc39/proposal-shadowrealm/blob/main/explainer.md) are an ECMAScript TC39 Stage 3 proposal which introduce the ability to create new isolated contexts from any existing JS context. Although not yet finalized, there's an implementation available in V8 and Chromium which can be used as a reference.
 
 > [!NOTE]
 > It's possible to test ShadowRealms in Electron by adding a V8 flag:
@@ -158,7 +158,7 @@ The implementation of ShadowRealms provides a basis for the design of Preload Re
 
 ### Preload realm scripts
 
-To make preload realms useful for app developers, they'll need to be able to run their own scripts in them.
+To make preload realms useful for app developers, they'll need to be able to run their own scripts in its context.
 
 For Electron's existing preload scripts, this is handled in sandboxed renderers by using the [synchronous `BROWSER_SANDBOX_LOAD` IPC](https://github.com/electron/electron/blob/3609fc7402881b1d51f6c56249506d5dd3fcbe93/lib/sandboxed_renderer/init.ts#L34) to gather scripts.
 
@@ -245,7 +245,7 @@ ServiceWorkerMain instances would be created when a remote associated interface 
 
 ### Increased IPC complexity
 
-Electron users will now need to be aware of multiple types of senders. The approach we decide ipcMain's TypeScript types will determine whether it requires breaking changes.
+Electron users will now need to be aware of multiple types of senders. The approach we decide to take with ipcMain's TypeScript types will determine whether it requires breaking changes.
 
 ```diff
 interface IpcMainEvent {
@@ -273,7 +273,7 @@ if (ec->IsServiceWorkerGlobalScope() || ec->IsSharedWorkerGlobalScope() ||
   return;
 ```
 
-By introducing Preload Realms, we may need to add additional checks for `IsShadowRealmGlobalScope()` or `IsPreloadRealmGlobalScope()`-the latter depending on how much we patch Blink.
+By introducing Preload Realms, we may need to add additional checks for `IsShadowRealmGlobalScope()` or `IsPreloadRealmGlobalScope()`-the latter depending on whether we patch Blink.
 
 Additionally, the setup code ShadowRealm's V8 Context relies on Blink's Oilpan GC ([see implementation](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/bindings/core/v8/shadow_realm_context.cc;l=63;drc=f092aac6779095fcb906f43fdcd223cd7148483f)). Whether we can switch to using V8/Gin's GC instead is yet to be seen.
 
@@ -281,24 +281,22 @@ Additionally, the setup code ShadowRealm's V8 Context relies on Blink's Oilpan G
 
 The ShadowRealm proposal is currently stalled due to lack of consensus on which DOM APIs should be made available in the ShadowRealmGlobalScope (https://github.com/tc39/proposal-shadowrealm/issues/284). This might be a new concept for consumers of preload realms. Common APIs we typically think of as JavaScript-native are missing such as `setTimeout` and `setInterval`.
 
-This could be addressed if necessary. Introducing our own `PreloadRealmGlobalScope` and exposing APIs via WebIDL's [`[Exposed]`](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/bindings/IDLExtendedAttributes.md#Exposed) attribute is possible via patching.
+This could be addressed if necessary. Introducing our own `PreloadRealmGlobalScope` and exposing APIs via WebIDL's [`[Exposed]`](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/bindings/IDLExtendedAttributes.md#Exposed) attribute is possible by patching Blink.
 
 It's worth noting that there's already an effort to expose some DOM APIs to all contexts via [`[Exposed=*]`](https://github.com/whatwg/webidl/pull/526).
 
 ## Rationale and alternatives
 
-- Provides a new `v8::Context` which can be adapted to new contexts
-- Could adopt more `ShadowRealm` features when standardized
-  - Reduced maintenence burdon
-- Impact of not doing this
-  - Reduced abilities for Electron projects to innovate
-  - Less competition to competing frameworks
+The design of preload realms provides an isolated and secure environment for Electron app developers
+to enable new use cases in service workers. It builds on developers' existing mental model for preload
+scripts.
 
+In using `ShadowRealm` as a basis for the design of Preload Realm contexts, we can potentially
+minimize the maintenance burdon of adding new contexts to Electron's renderer code. This should
+prevent us from needing to patch Blink to add a new global scope.
 
-### Rationale
-- Provides security and isolation over previous designs.
-- Aligns with developing JS standards, namely ShadowRealms.
-- Maintenance debt and risk of using Blink internals.
+By limiting the initial design and implementation to service workers, an iterative approach can be
+taken in supporting future contexts such as web workers.
 
 ### Alternatives
 
@@ -359,11 +357,11 @@ See above in the reference-level guide.
 
 ## Unresolved questions
 
-- Preloads in web workers, shared workers
-- Should we use ShadowRealmGlobalScope or introduce our own
+- Should we use ShadowRealmGlobalScope or introduce a new
   PreloadRealmGlobalScope?
-- Maybe we stick with "preload scripts" instead of "preload realms"
-- Only supported in sandboxed browsers?
+  - Adding a new global scope requires patching Blink.
+- The intended implementation of preload realms is only for sandboxed
+  renderers. Are we ok with this?
 
 ## Future possibilities
 
