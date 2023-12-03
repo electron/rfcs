@@ -106,7 +106,7 @@ ipcMain.handle('SUMMARIZE_TEXT', (event, text) => {
 });
 
 // Add our preload realm script to the session.
-session.defaultSession.setPreloadRealmScripts([
+session.defaultSession.setPreloads([
   {
     // Our script should only run in service worker preload realms.
     type: 'service-worker',
@@ -158,9 +158,30 @@ The implementation of ShadowRealms provides a basis for the design of Preload Re
 
 ### Preload realm scripts
 
-TODO
-- adding to session
-- synchronous IPC to gather scripts
+To make preload realms useful for app developers, they'll need to be able to run their own scripts in them.
+
+For Electron's existing preload scripts, this is handled in sandboxed renderers by using the [synchronous `BROWSER_SANDBOX_LOAD` IPC](https://github.com/electron/electron/blob/3609fc7402881b1d51f6c56249506d5dd3fcbe93/lib/sandboxed_renderer/init.ts#L34) to gather scripts.
+
+The same approach can be used by Preload Realms. A new initialization script will be added in `lib/preload_realm/` to invoke an IPC to collect scripts intended for service workers.
+
+To register scripts, `Session#setPreloads` can be expanded to support multiple target contexts.
+
+```ts
+session.defaultSession.setPreloads([
+  // Existing usage
+  'frame-preload.js',
+  // New equivalent usage
+  {
+    type: 'frame',
+    script: 'frame-preload.js'
+  },
+  // New context type
+  {
+    type: 'service-worker',
+    script: 'sw-preload.js',
+  }
+]);
+```
 
 ### `contextBridge`
 
@@ -219,16 +240,6 @@ ipcMain.on('ping', (event) => {
 ```
 
 ServiceWorkerMain instances would be created when a remote associated interface is binded for a service worker in the renderer. This can be handled using `ContentBrowserClient::RegisterAssociatedInterfaceBindersForServiceWorker`. When its associated renderer process terminates, it will be destroyed.
-
-- new `v8::Context`
-- use of `ShadowRealmGlobalScope`
-  - reference to drawbacks section on using proposed ShadowRealm API
-- add new `lib/` init scripts
-- extending contextBridge to allow render frame and SW usage
-  - should "main world" still be used?
-- extending IpcMainImpl to listen for SW broker interface
-- refactor: ipc messages to Session instead of WebContents
-
 
 ## Drawbacks
 
@@ -348,14 +359,10 @@ See above in the reference-level guide.
 
 ## Unresolved questions
 
-- Design of IPC handlers
-- Migration paths
 - Preloads in web workers, shared workers
-- Design of ServiceWorkerMain API
 - Should we use ShadowRealmGlobalScope or introduce our own
   PreloadRealmGlobalScope?
 - Maybe we stick with "preload scripts" instead of "preload realms"
-- Service Worker wake/sleep
 - Only supported in sandboxed browsers?
 
 ## Future possibilities
