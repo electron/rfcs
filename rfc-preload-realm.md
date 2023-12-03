@@ -94,7 +94,7 @@ ipcMain.handle('SUMMARIZE_TEXT', (event, text) => {
   // We want to validate that our IPC was sent from an extension running in a
   // service worker context and that the text is of the expected type.
   const isValid = (event.senderType === 'service-worker') &&
-    event.sender.url.startsWith('chrome-extension:') &&
+    event.senderWorker.url.startsWith('chrome-extension:') &&
     typeof text === 'string';
 
   if (!isValid) {
@@ -177,25 +177,48 @@ interface ContextBridge {
 
 To avoid hard crashes while invoking existing methods (ie. `exposeInMainWorld`), they can be modified to throw if the current V8 context isn't associated with a render frame.
 
-### `ipcRenderer` / `ipcMain`
+### `ipcRenderer` <=> `ipcMain`
 
 IPCs in Electron have historically only been transmitted between the main process and render frames in renderer processes.
 
 While web workers can exist in the same process as render frames, service workers live in their own process on a worker thread. IPC handlers in the main process will need to be aware of multiple types of senders for messages received.
 
+#### ServiceWorkerMain
+
+`WebContents`-and recently `WebFrameMain`-has served as the primary class for transmitting IPC messages. Service Workers will require a new class to facilitate messages to SWs in the renderer process.
+
+Chrome's extension system uses [`ServiceWorkerHost`](https://source.chromium.org/chromium/chromium/src/+/main:extensions/browser/service_worker/service_worker_host.h;drc=c59bc6c0e4ae58869eae5f4fa911840a56b647ff) which will serve as inspiration.
+
 ```ts
-/** JS wrapper around ServiceWorkerHost. */
+/** JS wrapper */
 class ServiceWorkerMain {
   /** Script URL running in the SW */
   url: string;
+  /** Unique version ID */
+  versionId: number;
   /** IPC interface */
   ipc: IpcMainImpl;
+
+  /**
+   * Get an existing instance from its unique version ID.
+   * Similar to Session.serviceWorkers#getFromVersionID
+   */
+  static fromVersionID(versionId: number): ServiceWorkerMain | null;
 }
 
 interface IpcServiceWorkerEvent {
-  sender: ServiceWorkerMain;
+  senderType: 'service-worker';
+  senderWorker: ServiceWorkerMain;
 }
+
+ipcMain.on('ping', (event) => {
+  if (event.senderType === 'service-worker') {
+    event.senderWorker.ipc.send('pong');
+  }
+});
 ```
+
+ServiceWorkerMain instances would be created when a remote associated interface is binded for a service worker in the renderer. This can be handled using `ContentBrowserClient::RegisterAssociatedInterfaceBindersForServiceWorker`. When its associated renderer process terminates, it will be destroyed.
 
 - new `v8::Context`
 - use of `ShadowRealmGlobalScope`
@@ -204,6 +227,7 @@ interface IpcServiceWorkerEvent {
 - extending contextBridge to allow render frame and SW usage
   - should "main world" still be used?
 - extending IpcMainImpl to listen for SW broker interface
+- refactor: ipc messages to Session instead of WebContents
 
 
 ## Drawbacks
@@ -217,6 +241,10 @@ interface IpcMainEvent {
   // Breaks existing code
 -  sender: WebContents;
 +  sender: WebContents | ServiceWorkerMain;
+
+  // Introduces properties while keeping the old intact
++  senderType: 'frame' | 'service-worker';
++  senderWorker: ServiceWorkerMain;
 }
 ```
 
@@ -270,9 +298,8 @@ It's worth noting that there's already an effort to expose some DOM APIs to all 
 Electron could provide its own worklet for deciding when and what to inject as a preload script.
 
 ```js
-// Register a uniquely named preload type. This allows for extensibility
-// from plugins.
-registerPreload('extensionApi', class {
+// Allow multiple registrations for extensibility.
+registerPreload(class {
   /**
    * Target one or more contexts.
    * Possible values could be:
@@ -311,7 +338,7 @@ which have been a source of confusion for some users (see [issues with nodeInteg
 
 ### Preloads for Web Workers
 
-Previously existed in Electron, however, never was introduced with context isolation support.
+Previously existed in Electron, however, never was introduced with context isolation support and thus never landed.
 
 [A PR was created](https://github.com/electron/electron/pull/28923) without support for context isolation which ultimately led to its rejection.
 
