@@ -18,7 +18,6 @@ project. The definition of a “substantial” change is subjective and evolves 
 but would include:
 
 - a new feature that requires a large amount of patches or new Chromium dependencies
-- a new [Electron Fuse](https://www.electronjs.org/docs/latest/tutorial/fuses) that changes runtime behavior
 - a new module in Electron’s API surface
 - or a refactor of Electron’s core startup code
 
