@@ -40,10 +40,10 @@ it may be closed with a polite request to submit an RFC first.
 
 An RFC can exist in four different stages:
 
-- **Proposed:** An RFC is Proposed if it has an open pull request with an API spec. At this point,
-  community feedback can be gathered to drive consensus on the spec. Maintainers can approve and
-  merge into the `rfcs` repo to move the RFC to the Active stage or close the pull request to mark
-  it as Declined.
+- **Proposed:** An RFC is Proposed if it has an open pull request with a spec document forked from
+  the RFC template. At this point, community feedback can be gathered to drive consensus on the spec.
+  Maintainers can approve and merge into the `rfcs` repo to move the RFC to the Active stage or close
+  the pull request to mark it as Declined.
 - **Active:** An RFC is Active once it is merged into the `electron/rfcs` repository. An
   implementation PR(s) can be opened in `electron/electron` as a technical reference.
   **An Active RFC means that the idea is worth being implemented and explored, not that the
