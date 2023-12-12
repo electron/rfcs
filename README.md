@@ -14,8 +14,12 @@ Such “substantial” changes should be introduced via the RFC process.
 ## When to use this process
 
 The RFC process is intended to be used to introduce “substantial” changes to the core Electron
-project. The definition of a “substantial” change is subjective and evolves with project norms,
-but would include:
+project. This type of change may require a significant amount of coordination effort in the
+design process or be time-consuming enough to build that consensus should be found prior to feature
+implementation.
+
+The categorization of “substantial” changes is subjective and evolves with project norms,
+but may include:
 
 - a new feature that requires a large amount of patches or new Chromium dependencies
 - a new module in Electron’s API surface
