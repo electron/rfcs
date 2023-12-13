@@ -38,12 +38,17 @@ it may be closed with a polite request to submit an RFC first.
 
 ## Stages
 
-An RFC can exist in four different stages:
+An RFC can exist in five different stages:
 
 - **Proposed:** An RFC is Proposed if it has an open pull request with a spec document forked from
   the RFC template. At this point, community feedback can be gathered to drive consensus on the spec.
   Maintainers can approve and merge into the `rfcs` repo to move the RFC to the Active stage or close
   the pull request to mark it as Declined.
+- **Pending Comment:** An RFC is Pending Comment if it has received approval from maintainers but has
+  yet to be merged. Proposed RFCs that are approved will be marked as Pending Comment for 1 month
+  before being merged and marked as Active if no blocking objections are made during this time.
+  If an objection during the final comment period blocks merging of the PR, the RFC status is moved
+  to Proposed until all feedback is addressed.
 - **Active:** An RFC is Active once it is merged into the `electron/rfcs` repository. An
   implementation PR(s) can be opened in `electron/electron` as a technical reference.
   **An Active RFC means that the idea is worth being implemented and explored, not that the
@@ -55,6 +60,20 @@ An RFC can exist in four different stages:
 - **Declined:** A Proposed RFC can be marked as Declined by maintainers after public discussion. When
   a proposal is declined, a maintainer should add a comment summarizing the reasons for the decision
   and close out the pull request.
+
+```mermaid
+flowchart TD
+  P[Proposed] --> PC[Pending Comment];
+  PC --> A[Active];
+  A --> C[Completed];
+  PC --> P;
+  P --> D[Declined];
+  A --> D;
+  style D fill:red;
+  style A fill:orange;
+  style C fill:lightgreen;
+  style PC fill:yellow;
+```
 
 ## Process
 
@@ -70,7 +89,7 @@ An RFC can exist in four different stages:
   open to general feedback. RFC authors are expected to engage with this feedback to arrive at a
   consensus with community stakeholders.
 - Eventually, Electron’s API WG will decide if the RFC is a candidate for inclusion in Electron.
-- This will trigger a one-month final comment period for the RFC. If enough consensus is achieved,
+- This will trigger a one-month final comment period for the RFC. If consensus is achieved,
   the RFC will be merged and marked as Active.
 
 ### Working on an Active RFC
