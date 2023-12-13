@@ -242,8 +242,8 @@ another top-level module.
 
 ```ts
 interface ContextBridge {
-  exposeInInitiatorWorld(key: string, api: any);
-  evaluateInInitiatorWorld(code: string);
+  exposeInInitiatorWorld(key: string, api: any): void;
+  evaluateInInitiatorWorld(code: string): any;
 }
 ```
 
@@ -441,8 +441,13 @@ See above in the reference-level guide.
 
 - Should we use ShadowRealmGlobalScope or introduce a new PreloadRealmGlobalScope?
   - Adding a new global scope requires patching Blink.
-- The intended implementation of preload realms is only for sandboxed renderers. Are we ok with
-  this?
+- The intended implementation of preload realms is only for sandboxed renderers. Out-of-process
+  service workers [cause crashes with node integration
+  enabled](https://github.com/electron/electron/pull/35919). Should we still look into making this
+  possible?
+- `contextBridge.evaluateInInitiatorWorld` is intended to run synchronously. This can be important
+  for applications which intend to expose globals prior to scripts being evaluated in the context.
+  How should we handle the semantic differences with `webFrame.executeJavaScript` which is async?
 
 ## Future possibilities
 
