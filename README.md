@@ -89,8 +89,10 @@ flowchart TD
   open to general feedback. RFC authors are expected to engage with this feedback to arrive at a
   consensus with community stakeholders.
 - Eventually, Electron’s API WG will decide if the RFC is a candidate for inclusion in Electron.
-- This will trigger a one-month final comment period for the RFC. If consensus is achieved,
-  the RFC will be merged and marked as Active.
+  The RFC should be reviewed by at least two WG members, and presented to a quorum of the group at a
+  synchronous meeting. If consensus is achieved, then the RFC will be a candidate for acceptance.
+- This will trigger a one-month final comment period for the RFC. Unless any issues come up that
+  the WG consider to block the implementation of the RFC, it will be merged and marked as Active.
 
 ### Working on an Active RFC
 
