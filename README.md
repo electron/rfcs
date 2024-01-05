@@ -143,7 +143,7 @@ kickstart it.
 Electron's RFC process was modeled on many established open source RFC processes. Inspiration for many ideas
 and bits of copywriting go to:
 
-- [emberjs/rfcs](https://github.com/ember/rfcs)
+- [emberjs/rfcs](https://github.com/emberjs/rfcs)
 - [reactjs/rfcs](https://github.com/reactjs/rfcs)
 - [rust-lang/rfcs](https://github.com/rust-lang/rfcs)
 - [tauri-apps/rfcs](https://github.com/tauri-apps/rfcs)
