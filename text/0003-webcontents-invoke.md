@@ -2,6 +2,7 @@
 
 - Start Date: 2024-05-12
 - RFC PR: [electron/rfcs#0005](https://github.com/electron/rfcs/pull/0005)
+- [Implementation PR](https://github.com/electron/electron/pull/42231)
 - Addresses Electron Issues:  [issue #1](https://github.com/electron/electron/issues/40182);  [issue #2](https://github.com/electron/electron/issues/25667).
 - Status: **Proposed**
 
@@ -81,26 +82,16 @@ The proposed feature will make Electron code more maintainable by providing a co
 
 ## Reference-level explanation
 
-The `webContents.invoke()` method will be implemented as a wrapper around a method on `mainFrame: WebFrameMain` where it will parse/ set default timeout.
-
-```
-// lib/browser/api/web-contents.ts
-
-WebContents.prototype.invoke = async function (...args: any[]) {
-  // Check if the first argument is an options object
-  const isOptionsProvided = typeof args[0] === 'object';
-  const { maxTimeoutMs = 5000 } = isOptionsProvided ? args.shift() : {};
-  const channel = args.shift();
-
-  return this.mainFrame.invoke(maxTimeoutMs, channel, ...args);
-};
-
-```
-The javascript wrapper for `WebFrameMain` will handle the timeout and reject the promise if timeout is exceeded.
+The `webContents.invoke()` will simply be a wrapper around `mainFrame.invoke`. The javascript wrapper for `WebFrameMain.invoke` will handle the timeout and reject the promise if timeout is exceeded.
 ```
 // lib/browser/api/web-frame-main.ts
 
-WebFrameMain.prototype.invoke = async function (maxTimeoutMs, channel, ...args) {
+WebFrameMain.prototype.invoke = async function (...args) {
+  // Check if the first argument is an options object
+  const isOptionsProvided = typeof args[0] === 'object';
+  const { maxTimeoutMs = DEFAULT_TIMEOUT } = isOptionsProvided ? args.shift() : {};
+  const channel = args.shift();
+
   if (typeof channel !== 'string') {
     throw new TypeError('Missing required channel argument');
   }
