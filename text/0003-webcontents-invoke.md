@@ -301,16 +301,20 @@ class IpcRenderer extends EventEmitter implements Electron.IpcRenderer {
 The implementation handles the following edge cases:
 
 1. Renderer Process Termination: If the renderer process containing the target frame is terminated before responding to the IPC message, the promise should be rejected.
-     > Current Solution: The timeout option on webContents.invoke will make sure the user gets a response rather than hanging.
+     > Current Solution: If there are no renderer process to respond, the promise will be rejected due to the timeout option in webContents.invoke(). This ensures that the user receives a response instead of hanging indefinitely.
 
-2. Frame Navigation: If the target frame navigates before responding to the IPC message, the promise should be rejected.
+2. Frame Navigation: If the target frame navigates before responding to the IPC message, the promise will resolve.
 
-   a. cross-site navigation: if a render frame navigates to a different site (not just a different page), it will be swapped out and a new render frame host will be created (process isolation). 
+   a. cross-site navigation: If a render frame navigates to a different site (not just a different page), it will be swapped out, and a new render frame host will be created (process isolation).
 
-      > Current Solution: The implementation checks that the routing id of the mainFrame (RenderFrameHost) is the same as the routing id of webFrame to make sure main process is not invoking a response from a different webFrame than intended. (Maybe this is a redundant check because the ElectronRenderer/ RendererAPI always corresponds to the calling WebFrameMain/RenderFrameHost so the routingIds will never be different)
+   b. same-site navigation: If the frame navigates to a different page within the same site, the same render frame host will be used.
 
-   b. same-site navigation: Navigating the same sime, the same render frame host will be used.
-      > Current Solution: Renderer will respond with a resolved value from registered handler. Ideally we want to reject the response if it is not the same page we intended to invoke from the main process, but there is no way to control that same site navigation re-uses the same frame with the same context. 
+
+      > Current Solution: Whether same or cross site navigation, the ipcRenderer will respond with a resolved value from the corresponding WebFrameMain/RenderFrameHost that made the call. Ideally we want to reject the response if it is not the same page we intended to invoke from the main process, but there is no way to control that same site navigation re-uses the same frame with the same context. 
+
+      The target frame is decided when the main process makes the invoke because the WebFrameMain/RenderFrameHost corresponds to the ElectronRenderer/RendererAPI. So if the render frame navigates away after invoking the request, the promise will be resolved with the handler from the WebFrameMain/RenderFrameHost that made the call. 
+      
+     The implementation checks that the routing ID of the main frame (RenderFrameHost) matches the routing ID of the web frame that received the invoke call. This ensures that the main process receives a response from the intended web frame and not a different one. However, this check may be redundant because the ElectronRenderer/RendererAPI always corresponds to the calling WebFrameMain/RenderFrameHost, so the routing IDs should never be different.
 
 3. No Registered Handler: If the renderer process does not have a registered handler for the specified channel, the promise should be rejected.
 
@@ -337,9 +341,15 @@ Not implementing this feature could lead to continued reliance on workaround sol
 
 Similar bidirectional IPC patterns exist in other frameworks and libraries, such as Node.js's worker_threads and various IPC modules in the Node.js ecosystem. The introduction of `webContents.invoke()` and `ipcRenderer.handle()` brings Electron closer to parity with these patterns and simplifies cross-process communication for Electron developers.
 
+This pattern also aligns with [Chromium's Out-of-Process iframes (OOPIFs)](https://www.chromium.org/developers/design-documents/oop-iframes/#TOC-Architecture-Overview), in a way that provides a more efficient and secure way to communicate with iframes that are isolated in separate processes.
+
+The proposed two-way IPC invocation feature aligns with Chromium's Out-of-Process iframes (OOPIFs) in providing a secure and efficient way to communicate with isolated processes. OOPIFs are a security feature in Chromium that isolates iframes into separate processes, reducing the attack surface and mitigating the impact of potential vulnerabilities. This is achieved by leveraging the same process model used for different sites, where each site is rendered in a separate process.
+
+By introducing `webContents.invoke()` and `ipcRenderer.handle()`, Electron aims to provide a similar mechanism for cross-process communication, enabling the main process to invoke functionality in the renderer process and vice versa. This approach not only streamlines the communication between processes but also enhances security by allowing the isolation of components into separate processes, thereby reducing the potential impact of vulnerabilities.
+
 ## Unresolved questions
 
-- I have a working implementation in a draft PR. The exact implementation details regarding timeout management and handling of edge cases need further discussion and refinement.
+- I have a [working implementation in a draft PR](https://github.com/electron/electron/pull/42231). The exact implementation details regarding timeout management and handling of edge cases need further discussion and refinement.
 - Consideration should be given to documentation so developers are well educated and guard for potential failure cases. 
 
 ## Future possibilities
