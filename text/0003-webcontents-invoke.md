@@ -1,4 +1,4 @@
-# Allow `invoke` and `handle` from Main Process to Renderer Process
+
 
 - Start Date: 2024-05-12
 - RFC PR: [electron/rfcs#0005](https://github.com/electron/rfcs/pull/0005)
