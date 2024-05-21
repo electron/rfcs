@@ -34,8 +34,8 @@ Send a message to the renderer process via channel and expect a result asynchron
 
 `options` is an optional parameter that specifies the maximum amount of time (in milliseconds)  to wait for a response from the renderer process before rejecting the promise. This is useful in scenarios where the function might take a long time to complete, or where it might not complete at all due renderer process termination.
 
-If `maxTimeoutMs` is not provided, a default value of 5000 milliseconds (5 seconds) is used. This means
-that if the function doesn't receive a response within 5 seconds, it will time out and throw an error.
+If `maxTimeoutMs` is not provided, a default value of 30000 milliseconds is used. This means
+that if the function doesn't receive a response within 30 seconds, it will time out and throw an error.
 
 The renderer process should listen for channel with `ipcRenderer.handle()`.
 
@@ -82,7 +82,7 @@ The proposed feature will make Electron code more maintainable by providing a co
 
 ## Reference-level explanation
 
-The `webContents.invoke()` will simply be a wrapper around `mainFrame.invoke`. The javascript wrapper for `WebFrameMain.invoke` will handle the timeout and reject the promise if timeout is exceeded.
+The `webContents.invoke()` will simply be a wrapper around `mainFrame.invoke`. The javascript wrapper for `WebFrameMain.invoke` will handle the timeout and reject the promise if timeout is exceeded. Default = 30000 ms.
 ```
 // lib/browser/api/web-frame-main.ts
 
@@ -300,10 +300,10 @@ class IpcRenderer extends EventEmitter implements Electron.IpcRenderer {
 ### Edge Cases Addressed
 The implementation handles the following edge cases:
 
-1. Renderer Process Termination: If the renderer process containing the target frame is terminated before responding to the IPC message, the promise should be rejected.
-     > Current Solution: If there are no renderer process to respond, the promise will be rejected due to the timeout option in webContents.invoke(). This ensures that the user receives a response instead of hanging indefinitely.
+1. Renderer Process Termination: If the renderer process containing the target frame is terminated before responding to the IPC message.
+     > Current Solution: If there are no renderer process to respond, the promise will be rejected due to the timeout option in `webContents.invoke()`. This ensures that the user receives a response instead of hanging indefinitely. Default value of 30000 ms is used as default (value inspired by [libraries that interact with Chromium](https://pptr.dev/api/puppeteer.waittimeoutoptions/#timeout))
 
-2. Frame Navigation: If the target frame navigates before responding to the IPC message, the promise will resolve.
+2. Frame Navigation: If the target frame navigates before responding to the IPC message.
 
    a. cross-site navigation: If a render frame navigates to a different site (not just a different page), it will be swapped out, and a new render frame host will be created (process isolation).
 
@@ -312,9 +312,9 @@ The implementation handles the following edge cases:
 
       > Current Solution: Whether same or cross site navigation, the ipcRenderer will respond with a resolved value from the corresponding WebFrameMain/RenderFrameHost that made the call. Ideally we want to reject the response if it is not the same page we intended to invoke from the main process, but there is no way to control that same site navigation re-uses the same frame with the same context. 
 
-      The target frame is decided when the main process makes the invoke because the WebFrameMain/RenderFrameHost corresponds to the ElectronRenderer/RendererAPI. So if the render frame navigates away after invoking the request, the promise will be resolved with the handler from the WebFrameMain/RenderFrameHost that made the call. 
+      >The target frame is decided when the main process makes the invoke because the WebFrameMain/RenderFrameHost corresponds to the ElectronRenderer/RendererAPI. So if the render frame navigates away after invoking the request, the promise will be resolved with the handler from the WebFrameMain/RenderFrameHost that made the call. 
       
-     The implementation checks that the routing ID of the main frame (RenderFrameHost) matches the routing ID of the web frame that received the invoke call. This ensures that the main process receives a response from the intended web frame and not a different one. However, this check may be redundant because the ElectronRenderer/RendererAPI always corresponds to the calling WebFrameMain/RenderFrameHost, so the routing IDs should never be different.
+     >The implementation checks that the routing ID of the main frame (RenderFrameHost) matches the routing ID of the web frame that received the invoke call. This ensures that the main process receives a response from the intended web frame and not a different one. However, this check may be redundant because the ElectronRenderer/RendererAPI always corresponds to the calling WebFrameMain/RenderFrameHost, so the routing IDs should never be different.
 
 3. No Registered Handler: If the renderer process does not have a registered handler for the specified channel, the promise should be rejected.
 
