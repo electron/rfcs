@@ -10,13 +10,17 @@
 
 ## Summary
 
-This proposal aims to introduce a new two-way IPC pattern that allows calling a renderer process from main process and waiting for the result. This will be done by adding `webContents.invoke` paired with `ipcRenderer.handle`. This feature will streamline bidirectional communication between the main and renderer processes, eliminating the need for workarounds and third-party libraries.
+This proposal aims to introduce a new two-way IPC pattern that allows calling a renderer process from the main process and waiting for the result. This will be done by adding `webContents.invoke` paired with `ipcRenderer.handle`. This feature will streamline bidirectional communication between the main and renderer processes, eliminating the need for workarounds and third-party libraries!
 
 ## Motivation
 
 The current absence of an `invoke/handle` pattern from the main to renderer processes in Electron limits the efficiency and simplicity of inter-process communication. While `ipcRenderer.invoke()` allows for asynchronous messaging from renderer to main, a symmetric functionality is missing for the opposite direction. 
 
-Introducing this feature will streamline communication and create cleaner, more maintainable codebases by eliminating the need for convoluted workarounds or reliance on external libraries. The popularity of 3rd party libraries like [electron-promise-ipc](https://www.npmjs.com/package/electron-promise-ipc), which has peaked at almost 1500 weekly downloads, underscores the real demand in the developer community. However, these external solutions often lack robust safeguards against edge cases and may become outdated or incompatible with newer Electron versions, potentially exposing developers to vulnerabilities. Developers have also been asking for this feature as documented in this [issue](https://github.com/electron/electron/issues/40182) and this [issue](https://github.com/electron/electron/issues/25667).  
+Introducing this feature will streamline communication and create cleaner, more maintainable codebases by eliminating the need for boilerplate workarounds or reliance on external libraries. The following metrics underscore a demand in the developer community for this feature:
+
+- Electron issues and PRs where developers have requested this feature multiple times:  [issue #1](https://github.com/electron/electron/issues/40182), [issue #2](https://github.com/electron/electron/issues/25667), [PR](https://github.com/electron/electron/pull/42001#issuecomment-2132298713) 
+- 3rd party libraries like [electron-promise-ipc](https://www.npmjs.com/package/electron-promise-ipc), which has peaked at almost 1500 weekly downloads. Lacks robust safeguards against edge cases and may become outdated or incompatible with newer Electron versions, potentially exposing developers to vulnerabilities.
+- Roughly [169 projects and 378 files](https://github.com/search?q=event.sender.send+path%3Arenderer&type=code) using call-and-response IPC workaround.
 
 This rfc hopes to implement a more efficient and straightforward communication mechanism between the main and renderer processes, reducing boilerplate code and providing a consistent API across Electron.
 
@@ -24,7 +28,7 @@ This rfc hopes to implement a more efficient and straightforward communication m
 
 ### `webContents.invoke(options, channel, ...args)`
 * `options` Object (optional)
-  * `maxTimeoutMs` number
+  * `timeout` number
 - `channel` string
 - `...args` any[]
 
@@ -34,7 +38,7 @@ Send a message to the renderer process via channel and expect a result asynchron
 
 `options` is an optional parameter that specifies the maximum amount of time (in milliseconds)  to wait for a response from the renderer process before rejecting the promise. This is useful in scenarios where the function might take a long time to complete, or where it might not complete at all due renderer process termination.
 
-If `maxTimeoutMs` is not provided, a default value of 30000 milliseconds is used. This means
+If `timeout` is not provided, a default value of 30000 milliseconds is used. This means
 that if the function doesn't receive a response within 30 seconds, it will time out and throw an error.
 
 The renderer process should listen for channel with `ipcRenderer.handle()`.
@@ -52,7 +56,7 @@ rendererWindow.webContents.on('did-finish-load', async () => {
   console.log(result); // Output from the renderer process
 
   // adding custom timeout
-  const result = await rendererWindow.webContents.invoke({maxTimeoutMs: 1000}, 'my-channel', arg1, arg2);
+  const result = await rendererWindow.webContents.invoke({timeout: 1000}, 'my-channel', arg1, arg2);
 });
 ```
 
@@ -89,21 +93,21 @@ The `webContents.invoke()` will simply be a wrapper around `mainFrame.invoke`. T
 WebFrameMain.prototype.invoke = async function (...args) {
   // Check if the first argument is an options object
   const isOptionsProvided = typeof args[0] === 'object';
-  const { maxTimeoutMs = DEFAULT_TIMEOUT } = isOptionsProvided ? args.shift() : {};
+  const { timeout = DEFAULT_TIMEOUT } = isOptionsProvided ? args.shift() : {};
   const channel = args.shift();
 
   if (typeof channel !== 'string') {
     throw new TypeError('Missing required channel argument');
   }
 
-  if (typeof maxTimeoutMs !== 'number') {
+  if (typeof timeout !== 'number') {
     throw new TypeError('Invalid timeout argument');
   }
 
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
-      reject(new Error(`Timeout after ${maxTimeoutMs}ms waiting for IPC response on channel '${channel}'`));
-    }, maxTimeoutMs);
+      reject(new Error(`Timeout after ${timeout}ms waiting for IPC response on channel '${channel}'`));
+    }, timeout);
 
     this._invoke(channel, args).then(({ error, result }) => {
       clearTimeout(timeoutId);
@@ -301,7 +305,7 @@ class IpcRenderer extends EventEmitter implements Electron.IpcRenderer {
 The implementation handles the following edge cases:
 
 1. Renderer Process Termination: If the renderer process containing the target frame is terminated before responding to the IPC message.
-     > Current Solution: If there are no renderer process to respond, the promise will be rejected due to the timeout option in `webContents.invoke()`. This ensures that the user receives a response instead of hanging indefinitely. Default value of 30000 ms is used as default (value inspired by [libraries that interact with Chromium](https://pptr.dev/api/puppeteer.waittimeoutoptions/#timeout))
+     > Current Solution: If there are no renderer process to respond, the promise will be rejected due to the timeout option in `webContents.invoke()`. This ensures that the user receives a response instead of hanging indefinitely. Default value of 30000 ms is used as default (value inspired by other [libraries that interact with Chromium](https://pptr.dev/api/puppeteer.waittimeoutoptions/#timeout))
 
 2. Frame Navigation: If the target frame navigates before responding to the IPC message.
 
@@ -310,11 +314,11 @@ The implementation handles the following edge cases:
    b. same-site navigation: If the frame navigates to a different page within the same site, the same render frame host will be used.
 
 
-      > Current Solution: Whether same or cross site navigation, the ipcRenderer will respond with a resolved value from the corresponding WebFrameMain/RenderFrameHost that made the call. Ideally we want to reject the response if it is not the same page we intended to invoke from the main process, but there is no way to control that same site navigation re-uses the same frame with the same context. 
+      > Current Solution: Whether same or cross site navigation, the ipcRenderer will respond with a resolved value from the corresponding WebFrameMain/RenderFrameHost that made the call. The target frame is decided when the main process makes the invoke because the WebFrameMain/RenderFrameHost corresponds to the ElectronRenderer/RendererAPI. So if the render frame navigates away after invoking the request, the promise will still be resolved. 
 
-      >The target frame is decided when the main process makes the invoke because the WebFrameMain/RenderFrameHost corresponds to the ElectronRenderer/RendererAPI. So if the render frame navigates away after invoking the request, the promise will be resolved with the handler from the WebFrameMain/RenderFrameHost that made the call. 
+      > Ideally we want to reject the response if it is not the same context we intended to invoke from the main process, but there is no way to intercept and reject a pending call (future development area). Documentation will be added to make developers aware of this edge case. I don't think this is a blocker because other IPC calls like `ipcRenderer.send` 
       
-     >The implementation checks that the routing ID of the main frame (RenderFrameHost) matches the routing ID of the web frame that received the invoke call. This ensures that the main process receives a response from the intended web frame and not a different one. However, this check may be redundant because the ElectronRenderer/RendererAPI always corresponds to the calling WebFrameMain/RenderFrameHost, so the routing IDs should never be different.
+     > The implementation checks that the routing ID of the main frame (RenderFrameHost) matches the routing ID of the web frame that received the invoke call. This ensures that the main process receives a response from the intended web frame and not a different one. However, this check may be redundant because the ElectronRenderer/RendererAPI always corresponds to the calling WebFrameMain/RenderFrameHost, so the routing IDs should never be different.
 
 3. No Registered Handler: If the renderer process does not have a registered handler for the specified channel, the promise should be rejected.
 
@@ -343,18 +347,18 @@ Similar bidirectional IPC patterns exist in other frameworks and libraries, such
 
 This pattern also aligns with [Chromium's Out-of-Process iframes (OOPIFs)](https://www.chromium.org/developers/design-documents/oop-iframes/#TOC-Architecture-Overview), in a way that provides a more efficient and secure way to communicate with iframes that are isolated in separate processes.
 
-The proposed two-way IPC invocation feature aligns with Chromium's Out-of-Process iframes (OOPIFs) in providing a secure and efficient way to communicate with isolated processes. OOPIFs are a security feature in Chromium that isolates iframes into separate processes, reducing the attack surface and mitigating the impact of potential vulnerabilities. This is achieved by leveraging the same process model used for different sites, where each site is rendered in a separate process.
 
 By introducing `webContents.invoke()` and `ipcRenderer.handle()`, Electron aims to provide a similar mechanism for cross-process communication, enabling the main process to invoke functionality in the renderer process and vice versa. This approach not only streamlines the communication between processes but also enhances security by allowing the isolation of components into separate processes, thereby reducing the potential impact of vulnerabilities.
 
 ## Unresolved questions
 
-- I have a [working implementation in a draft PR](https://github.com/electron/electron/pull/42231). The exact implementation details regarding timeout management and handling of edge cases need further discussion and refinement.
-- Consideration should be given to documentation so developers are well educated and guard for potential failure cases. 
+- I have a [working implementation in a draft PR](https://github.com/electron/electron/pull/42231). The exact implementation details regarding timeout management and handling of edge cases could need further discussion and refinement. Open to suggestions on how to make the implementation more robust!
+- For areas that we are unable to address with technical implementation, consideration should be given to documentation so developers are well educated and guard for potential failure cases. 
 
 ## Future possibilities
 
-- Support multiple frames where webContents can take a routingId to invoke from different WebFrameMain instances
+- Support multiple frames where webContents can take a routingId to invoke from different WebFrameMain instances.
+   - Options param can be easily extended by including optional `processId` and `routingId`, then we can invoke a response with webFrameMain with `webFrameMain.fromId(processId, routingId)`.
 - Add internal version for `ipcRendererInternal`
 - Be able to add a more robust implementation by removing the timeout and detect in the C++ code when the frame has navigated or destroyed and be able to reject the promise. 
 
