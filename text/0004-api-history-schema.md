@@ -96,7 +96,7 @@ The JSON Schema looks like this:
 
 ```json
 {
-  "title": "JSON schema for API history blocks in @electron/electron documentation",
+  "title": "JSON schema for API history blocks in electron documentation",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$comment": "If you change this schema, remember to edit the TypeScript interfaces in the linting script.",
   "definitions": {
