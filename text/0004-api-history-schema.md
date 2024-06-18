@@ -75,18 +75,18 @@ changes:
 deprecated:
   - pr-url: https://github.com/electron/electron/pull/37094
     breaking-changes-header: deprecated-browserwindowsettrafficlightpositionposition
-removed:
-  - pr-url: https://github.com/electron/electron/pull/39479
-    breaking-changes-header: removed-browserwindowsettrafficlightpositionposition
 ```
 
 > [!NOTE]
-> *"Why no version numbers?"*
 >
-> They will be derived from the PRs. This removes the need to change API History
+> - *"Why no version numbers?"*
+>   - They will be derived from the PRs. This removes the need to change API History
 > on backports.
 >
-> See [**Rationale and alternatives**](#rationale-and-alternatives).
+> - *"Why no `removed` property?"*
+>   - When an API is removed from Electron, it is also removed from the documentation.
+>
+> For further details, see [**Rationale and alternatives**](#rationale-and-alternatives).
 
 Meanwhile, the Electron website displays this information nicely in a table.
 Users can then use this information to help them upgrade their Electron version,
@@ -123,7 +123,6 @@ The JSON Schema looks like this:
   "properties": {
     "added": { "type": "array", "items": { "$ref": "#/definitions/changeSchema" } },
     "deprecated": { "type": "array", "items": { "$ref": "#/definitions/changeSchema" } },
-    "removed": { "type": "array", "items": { "$ref": "#/definitions/changeSchema" } },
     "changes": { "type": "array", "items": { "$ref": "#/definitions/changeSchema" } }
   },
   "additionalProperties": false
@@ -135,7 +134,6 @@ The developer will include information about when/where/how/why an API was:
 - Added
 - Changed
 - Deprecated
-- Removed
 
 Along with this, they will include a link to the PR where this change was made
 and preferably include a short description of the change. If applicable, they
@@ -166,6 +164,12 @@ update the docs when a backport is made.
   to derive exact version numbers, and no further documentation changes on main
   are necessary if the change is backported to other branches."
   — @dsanders11 via Slack
+- The Node.js API history [includes a `removed` property](https://github.com/nodejs/node/blob/0db95d371274104a5acf09214bf8325c45bfb64a/doc/api/errors.md?plain=1#L3432-L3442),
+  however that will not be included in this schema because:
+  - When an API is removed from Electron, it is also removed from the documentation.
+    - This currently cannot be changed because [the documentation is used to generate
+    TypeScript definitions](https://github.com/electron/docs-parser/blob/d95a2a2e58d6dafce1247d4bc820ca60516fe10c/README.md?plain=1#L36-L43)
+    for the Electron API.
 - Using [Zod](https://zod.dev/) validation logic may be simpler. It's also easy
 to understand for a developer even if they've never worked with it before:
 
@@ -179,7 +183,6 @@ to understand for a developer even if they've never worked with it before:
   const historySchema = z.object({
     added: z.array(changeSchema).optional(),
     deprecated: z.array(changeSchema).optional(),
-    removed: z.array(changeSchema).optional(),
     changes: z.array(changeSchema).optional(),
   });
   ```
