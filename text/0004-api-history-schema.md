@@ -19,7 +19,7 @@
 
 This proposal aims to introduce a
 [JSON Schema](https://json-schema.org/overview/what-is-jsonschema)
-for (YAML) API history blocks in `electron/electron` documentation.
+for (YAML) API history blocks in Electron documentation.
 It will be used to enforce and validate the structure and content of these blocks,
 which will include historical information about changes to the various APIs in Electron.
 
@@ -80,6 +80,14 @@ removed:
     breaking-changes-header: removed-browserwindowsettrafficlightpositionposition
 ```
 
+> [!NOTE]
+> *"Why no version numbers?"*
+>
+> They will be derived from the PRs. This removes the need to change API History
+> on backports.
+>
+> See [**Rationale and alternatives**](#rationale-and-alternatives).
+
 Meanwhile, the Electron website displays this information nicely in a table.
 Users can then use this information to help them upgrade their Electron version,
 migrate from deprecated APIs, etc.
@@ -96,7 +104,7 @@ The JSON Schema looks like this:
 
 ```json
 {
-  "title": "JSON schema for API history blocks in electron documentation",
+  "title": "JSON schema for API history blocks in Electron documentation",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$comment": "If you change this schema, remember to edit the TypeScript interfaces in the linting script.",
   "definitions": {
@@ -150,6 +158,14 @@ would need.
 numbers for the changes. This is more efficient than including the version
 numbers in the Markdown docs themselves. It also removes the need to manually
 update the docs when a backport is made.
+  > "...There’s one somewhat significant change we’d like to call out about
+  the proposal, which came up during discussion when we were reviewing proposals.
+  [...] [we] decided that the approach with the least drawbacks would be to only
+  use PR URLs (the root PRs to main) instead of hardcoded version strings as in
+  the proposal. This can serve as a single source of truth which can then be used
+  to derive exact version numbers, and no further documentation changes on main
+  are necessary if the change is backported to other branches."
+  — @dsanders11 via Slack
 - Using [Zod](https://zod.dev/) validation logic may be simpler. It's also easy
 to understand for a developer even if they've never worked with it before:
 
@@ -167,6 +183,20 @@ to understand for a developer even if they've never worked with it before:
     changes: z.array(changeSchema).optional(),
   });
   ```
+
+  - > *"Why Zod specifically?"*
+    - First-class TypeScript support and [static type inference](https://zod.dev/?id=type-inference).
+    - [Most starred](https://byby.dev/js-object-validators) JavaScript object
+    validation library.
+    - [Zero dependencies](https://www.npmjs.com/package/zod?activeTab=dependencies).
+    - Liked by developers
+    [[1]](https://www.reddit.com/r/reactjs/comments/z739b9/yup_vs_zod_what_do_you_prefer_and_why/)
+    [[2]](https://medium.com/@weidagang/zod-schema-validation-made-easy-195f86d82d44)
+    [[3]](https://rasitcolakel.medium.com/exploring-zod-a-comprehensive-guide-to-powerful-data-validation-in-javascript-typescript-2c4818b5646d).
+    - Liked in comparisons:
+    [[1]](https://zod.dev/?id=comparison)
+    [[2]](https://blog.logrocket.com/comparing-schema-validation-libraries-zod-vs-yup/#zod-vs-yup)
+    [[3]](https://www.bitovi.com/blog/comparing-schema-validation-libraries-ajv-joi-yup-and-zod).
 
 ## Prior art
 
@@ -204,13 +234,13 @@ The process should ideally be as effortless as possible.
   the Linux implementation of a feature.
     - Maybe this can be inferred from the PR tags instead?
 
-- Maybe a more precise type of change should be specified.
+## Future possibilities
+
+- Once the RFC has been implemented for a while, a script could be made that
+users can run that would display all of the places in their code that need to
+be changed because of breaking changes, deprecations, etc.
+
+- Maybe a more precise type of change could be specified.
   - Maybe the developer or user could benefit from seeing/filtering changes
   based on security fixes, bug fixes, etc.
     - Maybe this can be inferred from the PR tags instead?
-
-## Future possibilities
-
-Once the RFC has been implemented for a while, a script could be made that
-users can run that would display all of the places in their code that need to
-be changed because of breaking changes, deprecations, etc.
