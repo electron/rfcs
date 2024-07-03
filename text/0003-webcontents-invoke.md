@@ -356,10 +356,12 @@ By introducing `webContents.invoke()` and `ipcRenderer.handle()`, Electron aims 
 - For areas that we are unable to address with technical implementation, consideration should be given to documentation so developers are well educated and guard for potential failure cases. 
 
 ## Future possibilities
-
+- Add internal version for `ipcRendererInternal` as fast follow:
+    - Will be able to remove internal ipcRenderer `handle` function in `lib/renderer/ipc-renderer-internal-utils.ts` and `invokeInWebContents` function in `lib/browser/ipc-main-internal-utils.ts`
+    - Also refactor the `webFrameInit` in `web-frame-init.ts` to handle various method calls with new channel names based on the new implementation
 - Support multiple frames where webContents can take a routingId to invoke from different WebFrameMain instances.
    - Options param can be easily extended by including optional `processId` and `routingId`, then we can invoke a response with webFrameMain with `webFrameMain.fromId(processId, routingId)`.
-- Add internal version for `ipcRendererInternal`
+
 - Be able to add a more robust implementation by removing the timeout and detect in the C++ code when the frame has navigated or destroyed and be able to reject the promise. 
 
   - i.e when webContents gets destroyed in the middle of an invoke, I've tested that `AbortCallback` gets called because an attempt is made to execute avaScript in a context that should not be executing JavaScript. i.e context that has been destroyed. But have not figured out a way to pass the error back to the javascript/ main world
