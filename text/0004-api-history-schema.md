@@ -131,9 +131,9 @@ The JSON Schema looks like this:
   },
   "type": "object",
   "properties": {
-    "added": { "type": "array", "items": { "$ref": "#/definitions/addedChangeSchema" } },
-    "deprecated": { "type": "array", "items": { "$ref": "#/definitions/deprecatedChangeSchema" } },
-    "changes": { "type": "array", "items": { "$ref": "#/definitions/changesChangeSchema" } }
+    "added": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "$ref": "#/definitions/addedChangeSchema" } },
+    "deprecated": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "$ref": "#/definitions/deprecatedChangeSchema" } },
+    "changes": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/changesChangeSchema" } }
   },
   "additionalProperties": false
 }
