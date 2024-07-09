@@ -108,7 +108,7 @@ The JSON Schema looks like this:
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$comment": "If you change this schema, remember to edit the TypeScript interfaces in the linting script.",
   "definitions": {
-    "changeSchema": {
+    "baseChangeSchema": {
       "type": "object",
       "properties": {
         "pr-url": { "type": "string", "pattern": "^https://github.com/electron/electron/pull/\\d+$" },
@@ -117,13 +117,23 @@ The JSON Schema looks like this:
       },
       "required": [ "pr-url" ],
       "additionalProperties": false
+    },
+    "addedChangeSchema": {
+      "allOf": [ { "$ref": "#/definitions/baseChangeSchema" } ]
+    },
+    "deprecatedChangeSchema": {
+      "$comment": "TODO: Make 'breaking-changes-header' required in the future.",
+      "allOf": [ { "$ref": "#/definitions/baseChangeSchema" } ]
+    },
+    "changesChangeSchema": {
+      "allOf": [ { "$ref": "#/definitions/baseChangeSchema" }, { "required": [ "description" ] } ]
     }
   },
   "type": "object",
   "properties": {
-    "added": { "type": "array", "items": { "$ref": "#/definitions/changeSchema" } },
-    "deprecated": { "type": "array", "items": { "$ref": "#/definitions/changeSchema" } },
-    "changes": { "type": "array", "items": { "$ref": "#/definitions/changeSchema" } }
+    "added": { "type": "array", "items": { "$ref": "#/definitions/addedChangeSchema" } },
+    "deprecated": { "type": "array", "items": { "$ref": "#/definitions/deprecatedChangeSchema" } },
+    "changes": { "type": "array", "items": { "$ref": "#/definitions/changesChangeSchema" } }
   },
   "additionalProperties": false
 }
