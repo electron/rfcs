@@ -111,9 +111,21 @@ The JSON Schema looks like this:
     "baseChangeSchema": {
       "type": "object",
       "properties": {
-        "pr-url": { "type": "string", "pattern": "^https://github.com/electron/electron/pull/\\d+$" },
-        "breaking-changes-header": { "type": "string", "minLength": 3 },
-        "description": { "type": "string", "minLength": 3, "maxLength": 120 }
+        "pr-url": {
+          "description": "URL to the 'root' GitHub Pull Request for the change (i.e. not a backport PR)",
+          "type": "string", "pattern": "^https://github.com/electron/electron/pull/\\d+$",
+          "examples": [ "https://github.com/electron/electron/pull/26789" ]
+        },
+        "breaking-changes-header": {
+          "description": "Heading ID for the change in `electron/docs/breaking-changes.md`",
+          "type": "string", "minLength": 3,
+          "examples": [ "deprecated-browserwindowsettrafficlightpositionposition" ]
+        },
+        "description": {
+          "description": "Short description of the change",
+          "type": "string", "minLength": 3, "maxLength": 120,
+          "examples": [ "Made `trafficLightPosition` option work for `customButtonOnHover`." ]
+        }
       },
       "required": [ "pr-url" ],
       "additionalProperties": false
