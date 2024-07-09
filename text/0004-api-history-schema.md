@@ -113,7 +113,7 @@ The JSON Schema looks like this:
       "properties": {
         "pr-url": { "type": "string", "pattern": "^https://github.com/electron/electron/pull/\\d+$" },
         "breaking-changes-header": { "type": "string", "minLength": 3 },
-        "description": { "type": "string", "minLength": 3, "maxLength": 72 }
+        "description": { "type": "string", "minLength": 3, "maxLength": 120 }
       },
       "required": [ "pr-url" ],
       "additionalProperties": false
