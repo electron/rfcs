@@ -375,7 +375,9 @@ preload scripts.
 
 In using `ShadowRealm` as a basis for the design of Preload Realm contexts, we can potentially
 minimize the maintenance burdon of adding new contexts to Electron's renderer code. This should
-prevent us from needing to patch Blink to add a new global scope.
+prevent us from needing to patch Blink to add a new global scope. However, due to yet to be
+finalized nature of the ShadowRealm proposal, it might be best to initially mark Preload Realms as
+experimental.
 
 By limiting the initial design and implementation to service workers, an iterative approach can be
 taken in supporting future contexts such as web workers.
