@@ -45,7 +45,7 @@ An RFC can exist in five different stages:
   Maintainers can approve and merge into the `rfcs` repo to move the RFC to the Active stage or close
   the pull request to mark it as Declined.
 - **Pending Comment:** An RFC is Pending Comment if it has received approval from maintainers but has
-  yet to be merged. Proposed RFCs that are approved will be marked as Pending Comment for 1 month
+  yet to be merged. Proposed RFCs that are approved will be marked as Pending Comment for 2 weeks
   before being merged and marked as Active if no blocking objections are made during this time.
   If an objection during the final comment period blocks merging of the PR, the RFC status is moved
   to Proposed until all feedback is addressed.
