@@ -1,6 +1,6 @@
 - Start Date: 2024-01-11
 - RFC PR: [electron/rfcs#8](https://github.com/electron/rfcs/pull/8)
-- Status: **Proposed**
+- Status: **Active**
 
 # Preload Realm for Service Workers
 
