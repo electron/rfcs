@@ -12,22 +12,47 @@
 
 Add a corner smoothing primitive to Blink's paint procedures, along with a CSS property to control this new behavior.
 
+The goal of this proposal is to make smooth corners available, performant, and simple for Electron app developers.
+
 ## Motivation
 
 Integrating with the operating system and its design language is an important aspect of desktop application design.
 
 macOS is well known for its use of smooth round corners. macOS desktop applications that use similar smooth corners in their shapes, even when they deviate from the system controls' designs in other ways, are more harmonious with the system.
 
+While the difference can be subtle to many people, it holds back Electron apps from fully immersing into the system and fitting in with native apps.
+
+<!-- TODO: example image of same Electron app with and without corner smoothing. -->
+
 ## Guide-level explanation
 
-New CSS property: `-electron-border-radius-smoothing`
+### Background: What is Corner Smoothing?
+
+Applying `border-radius` to an element gives it round corners.
+
+<!-- TODO: example CSS and SVG image -->
+
+This shape is constructed by placing a circle at each corner inside the box and removing the area outside the circle.
+
+<!-- TODO: example SVG image of a box corner with a circle inside it -->
+
+This leaves behind a shape that looks much like a box, but has round corners.
+
+<!-- TODO: example SVG image of a simple rounded rect -->
+
+<!-- TODO -->
+
+### CSS property: `-electron-corner-smoothing`
 
 ```css
 .round-rect {
   border-radius: 32px;
-  -electron-border-radius-smoothing: 1.0;
+  -electron-corner-smoothing: 100%;
 }
 ```
+<!-- TODO: example SVG image of CSS above -->
+
+<!-- TODO -->
 
 <!--
 Explain the feature as if it were already implemented in Electron and you were teaching it to
@@ -77,7 +102,11 @@ the detailed proposal makes those examples work.
 
 ## Drawbacks
 
-Electron tends to avoid adding features to the Web implemenation, such as the one proposed here.
+### New Territory
+
+Electron tends to avoid adding features to the Web, and adding a CSS property for a visual modification is new territory for the project.
+
+<!-- TODO -->
 
 <!-- Why should we *not* do this? -->
 
@@ -120,7 +149,8 @@ adaptation from other technologies.
 #### 🧠 Brainstorm: ⛈️
 - Figma corner smoothing blog post
 - iOS & macOS design
-- `-webkit-app-region` in Electron's early days
+- CSS-wise, `-webkit-app-region` in Electron's early days
+- CSS Borders Level 4 Draft Issue: https://github.com/w3c/csswg-drafts/issues/10653
 
 ## Unresolved questions
 
