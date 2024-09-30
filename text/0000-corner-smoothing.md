@@ -10,9 +10,11 @@
 
 ## Summary
 
-Add a corner smoothing primitive to Blink's paint procedures, along with a CSS property to control this new behavior.
+<!-- TODO: SVG image with regular and smooth rounded corners, as well as overlapping outlines inbetween them. -->
 
-The goal of this proposal is to make smooth corners available, performant, and simple for Electron app developers.
+Add a corner smoothing procedure to Blink's Paint phase, controlled by a new CSS property.
+
+The goal of this proposal is to make smooth corners simple, performant, and customizable for Electron app developers.
 
 ## Motivation
 
@@ -20,7 +22,7 @@ Integrating with the operating system and its design language is an important as
 
 macOS is well known for its use of smooth round corners. macOS desktop applications that use similar smooth corners in their shapes, even when they deviate from the system controls' designs in other ways, are more harmonious with the system.
 
-While the difference can be subtle to many people, it holds back Electron apps from fully immersing into the system and fitting in with native apps.
+The difference can be subtle to many people, but it holds back Electron apps from fully immersing into the system and fitting in with native apps.
 
 <!-- TODO: example image of same Electron app with and without corner smoothing. -->
 
@@ -28,21 +30,42 @@ While the difference can be subtle to many people, it holds back Electron apps f
 
 ### Background: What is Corner Smoothing?
 
+<!-- TODO: remove this section -->
+
 Applying `border-radius` to an element gives it round corners.
 
-<!-- TODO: example CSS and SVG image -->
+```css
+.box {
+  border-radius: 12px;
+}
+```
+<!-- TODO: example SVG image for above CSS -->
 
 This shape is constructed by placing a circle at each corner inside the box and removing the area outside the circle.
 
 <!-- TODO: example SVG image of a box corner with a circle inside it -->
 
-This leaves behind a shape that looks much like a box, but has round corners.
+Looking at one corner, we can see this shape has 3 distinct parts: a straight line from one side of the box, a quarter circle for the corner, and another straight line for the other side of the box.
 
-<!-- TODO: example SVG image of a simple rounded rect -->
+<!-- TODO: exampel SVG image of the path of a simple rounded corner's 3 parts in different colors -->
 
-<!-- TODO -->
+Imagine a car driving on this path. As it goes along the straight path, the steering wheel is exactly neutral.
+
+<!-- TODO: example SVG image of a car going along the straight path and a steering wheel illustration perfectly neutral -->
+
+When the car reaches the quarter circle, the steering wheel instantly turns to an angle. It stays at this same angle for the entire turn.
+
+<!-- TODO: example SVG image of a car going along the quarter circle path and a steering wheel illustration at a slight angle -->
+
+Once the car finishes the turn, the steering wheel instantly returns to neutral.
+
+<!-- TODO: example SVG image of a car going along the other straight path and a steering wheel illustration perfectly neutral -->
 
 ### CSS property: `-electron-corner-smoothing`
+
+For an element that has the `border-radius` property applied, smooths the round corners by extending the curve along the element's edge.
+
+**Example**:
 
 ```css
 .round-rect {
@@ -52,7 +75,11 @@ This leaves behind a shape that looks much like a box, but has round corners.
 ```
 <!-- TODO: example SVG image of CSS above -->
 
-<!-- TODO -->
+* **Value**: The percentage value denotes how far the corner curve can extend, in terms of the radius. At `100%`, the curve will extend the same length as the radius.
+
+  * **Initial value**: `0%`
+
+* **Formal syntax**: `-electron-corner-smoothing = <percentage>`
 
 <!--
 Explain the feature as if it were already implemented in Electron and you were teaching it to
@@ -72,13 +99,47 @@ When writing this section, make sure to clearly account for API differences or c
 Windows, macOS, and Linux.
 -->
 
+This CSS property is prefixed with `-electron-` to clearly indicate that it is an Electron-specific extension.
+
 ## Reference-level explanation
 
-Blink is the 'Web implementation' in Chromium, also used in Electron. To effectively implement this feature we have to modify some of Blink's internals—specifically the CSS rules definitions, the Paint procedures, and the glue between these two areas of the codebase.
+### Smoothing Procedure
 
-<!-- TODO: diagram -->
+The procedure for smoothing the roundness of a corner is based on research in the article [*Desparately seeking squircles* by Daniel Furse, published on the Figma blog](https://www.figma.com/blog/desperately-seeking-squircles/).
 
-<!-- TODO: smoothing method -->
+In plain terms, we're taking the points where the sides connect to the corner circle and pulling them back into the side:
+
+<!-- TODO: SVG diagram showing simple rounding, highlighting connection points and arrows pulling them back -->
+
+Instead of constructing a round corner with a quarter circle, we will be constructing two cubic Bézier curves.
+
+<!-- TODO: SVG diagram showing new construction with 2 curves -->
+
+This procedure takes two input parameters: a radius and a length. The radius controls how far in to round the corner. The length controls how far along the side to extend the curve.
+
+From those two inputs, we can calculate the remaining values to construct the 
+
+This procedure satisfies two mathematical constraits:
+
+* The curvature at the point where the side ends and the curve starts is zero. This ensures the transition from the side to the curve is smooth.
+* The position and curvature of the "corner" point are the same.
+
+This procedure does not produce mathematically continuous curvature, but the effect is much the same.
+
+### CSS Property Implementation
+
+<!-- TODO: something in blink -->
+
+### Blink Paint Procedure Patch
+
+<!-- TODO -->
+
+### Interactions & Corner Cases
+
+*(Haha, corner cases.)*
+
+<!-- TODO: elliptical corners -->
+<!-- TODO -->
 
 Prototype: https://github.com/electron/electron/tree/clavin/smooth-corner-rounding
 
@@ -104,9 +165,13 @@ the detailed proposal makes those examples work.
 
 ### New Territory
 
-Electron tends to avoid adding features to the Web, and adding a CSS property for a visual modification is new territory for the project.
+Electron does not often features to the Web, and adding a CSS property for a visual modification is new territory for the project.
 
-<!-- TODO -->
+<!-- When has Electron added Web features? -->
+
+### Overlap with Web Standards
+
+<!-- TODO: perhaps this is better addressed by exsiting web standards bodies -->
 
 <!-- Why should we *not* do this? -->
 
@@ -128,6 +193,7 @@ Electron tends to avoid adding features to the Web, and adding a CSS property fo
   - Less applicable use case
 - Add a WebContents option controlling this feature, default off
   - Potentially avoid fingerprinting
+- Alternative approach: superellipses
 
 ## Prior art
 
@@ -164,8 +230,13 @@ adaptation from other technologies.
 
 #### 🧠 Brainstorm: ⛈️
 - Out of scope: Committing to a specific rounding strategy or algorithm
+- Elliptical `border-radius` values
 
 ## Future possibilities
+
+### Web Standardization
+
+<!-- TODO -->
 
 <!--
 Think about what the natural extension and evolution of your proposal would be and how it would
@@ -182,6 +253,3 @@ Note that having something written down in the future possibilities section is n
 accept the current or a future RFC; such notes should be in the section on motivation or
 rationale in this or subsequent RFCs. The section merely provides additional information.
 -->
-
-#### 🧠 Brainstorm: ⛈️
-- Web standardization
