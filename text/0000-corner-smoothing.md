@@ -10,7 +10,7 @@
 
 ## Summary
 
-<!-- TODO: SVG image with regular and smooth rounded corners, as well as overlapping outlines inbetween them. -->
+<!-- TODO: SVG image with regular and smooth rounded corners, as well as overlapping outlines between them. -->
 
 Add a corner smoothing procedure to Blink's Paint phase, controlled by a new CSS property.
 
@@ -117,31 +117,30 @@ Instead of constructing a round corner with a quarter circle, we will be constru
 
 This procedure takes two input parameters: a radius and a length. The radius controls how far in to round the corner. The length controls how far along the side to extend the curve.
 
-From those two inputs, we can calculate the remaining values to construct the 
+From those two inputs, we can calculate the remaining control points to construct the curves.
 
 This procedure satisfies two mathematical constraits:
 
 * The curvature at the point where the side ends and the curve starts is zero. This ensures the transition from the side to the curve is smooth.
-* The position and curvature of the "corner" point are the same.
+* The position and curvature at the "middle" point of the round corner are the same.
 
 This procedure does not produce mathematically continuous curvature, but the effect is much the same.
-
-### CSS Property Implementation
-
-<!-- TODO: something in blink -->
 
 ### Blink Paint Procedure Patch
 
 <!-- TODO -->
 
+* Prototype: https://github.com/electron/electron/tree/clavin/smooth-corner-rounding
+
+### CSS Property Implementation
+
+<!-- TODO: something in blink -->
+
 ### Interactions & Corner Cases
 
 *(Haha, corner cases.)*
 
-<!-- TODO: elliptical corners -->
 <!-- TODO -->
-
-Prototype: https://github.com/electron/electron/tree/clavin/smooth-corner-rounding
 
 <!--
 This is the technical portion of the RFC. Explain the design in sufficient detail that:
@@ -155,23 +154,12 @@ The section should return to the examples given in the previous section, and exp
 the detailed proposal makes those examples work.
 -->
 
-#### 🧠 Brainstorm: ⛈️
-- Medium complexity patch
-- Blink paint phase modified to understand smoothing
-- CSS property addition
-  - Plumbing property to Blink paint phase
-
 ## Drawbacks
 
-### New Territory
+* Electron doesn't usually add (TODO: hasn't ever?) features to the Web, and adding a CSS property and a visual modification is new territory for the project.
+* 
 
-Electron does not often features to the Web, and adding a CSS property for a visual modification is new territory for the project.
-
-<!-- When has Electron added Web features? -->
-
-### Overlap with Web Standards
-
-<!-- TODO: perhaps this is better addressed by exsiting web standards bodies -->
+<!-- TODO: When has Electron added Web features? -->
 
 <!-- Why should we *not* do this? -->
 
@@ -190,10 +178,10 @@ Electron does not often features to the Web, and adding a CSS property for a vis
 - Alternative: CSS Houdini APIs + image masking
   - Horrifically inefficient and noisy code changes
 - Alternative: Web standards proposal
-  - Less applicable use case
+  - Less persuasive use case
+- Alternative approach: superellipses
 - Add a WebContents option controlling this feature, default off
   - Potentially avoid fingerprinting
-- Alternative approach: superellipses
 
 ## Prior art
 
