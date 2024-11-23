@@ -14,8 +14,8 @@
 <rect x="-150" y="171" width="512" height="512" rx="128" stroke="#444444" stroke-width="8"/>
 <circle cx="234" cy="171" r="6" stroke="#2A90D9" stroke-width="4"/>
 <circle cx="362" cy="299" r="6" stroke="#2A90D9" stroke-width="4"/>
-<path d="M386 291L386 325M386 325L394 317M386 325L378 317" stroke="#2A90D9" stroke-width="4"/>
-<path d="M242 147L208 147M208 147L216 155M208 147L216 139" stroke="#2A90D9" stroke-width="4"/>
+<path d="M386 291L386 325M386 325L394 317L386 325L378 317" stroke="#2A90D9" stroke-width="4"/>
+<path d="M242 147L208 147M208 147L216 155L208 147L216 139" stroke="#2A90D9" stroke-width="4"/>
 </g>
 <rect x="555" y="64" width="384" height="384" fill="white"/>
 <line x1="746" y1="448" x2="746" y2="64" stroke="#EEEEEE" stroke-width="2"/>
@@ -32,5 +32,5 @@
 <circle cx="627.2" cy="171" r="6" stroke="#2A90D9" stroke-width="4"/>
 <circle cx="832" cy="375.8" r="6" stroke="#2A90D9" stroke-width="4"/>
 </g>
-<path d="M489 262H533M533 262L517 246M533 262L517 278" stroke="#444444" stroke-width="6"/>
+<path d="M489 262H533M533 262L517 246L533 262L517 278" stroke="#444444" stroke-width="6"/>
 </svg>
