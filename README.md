@@ -54,8 +54,8 @@ An RFC can exist in six different stages:
   **An Active RFC means that the idea is worth being implemented and explored, not that the
   maintainers are committing to adding it to Electron.** If a new development causes an Active
   RFC to become unnecessary in any way, maintainers can choose to ultimately decline it.
-- **Abandoned:** An RFC is considered Abandoned if it has no owner actively pushing it forward.
-  It may be reopened in the same PR or as a new PR if an owner renews interest in pursuing it.
+- **Abandoned:** An RFC will be closed as Abandoned if it has no owner actively pushing it forward.
+  The original owner may reopen the PR, or a new owner may open a new PR if they are interested in pursuing it.
   Maintainers will check interest in pursuing the RFC prior to labeling it abandoned and closing
   the PR.
 - **Completed:** Once the implementation for an Active RFC is merged into Electron’s `main` branch
