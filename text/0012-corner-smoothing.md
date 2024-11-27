@@ -1,14 +1,14 @@
 # RFC Template
 
-- Start Date: 2024-09-28
-- RFC PR: [electron/rfcs#0000](https://github.com/electron/rfcs/pull/0000)
-- Electron Issues: [electron/electron#0000](https://github.com/electron/electron/issue/0000)
-- Reference Implementation: [electron/electron#0000](https://github.com/electron/electron/pull/0000)
+- Start Date: 2024-11-26
+- RFC PR: [electron/rfcs#0012](https://github.com/electron/rfcs/pull/12)
+- Electron Issues: None <!-- [electron/electron#0000](https://github.com/electron/electron/issue/0000) -->
+- Reference Implementation: None (yet) <!-- [electron/electron#0000](https://github.com/electron/electron/pull/0000) -->
 - Status: **Proposed**
 
 # Corner Smoothing
 
-![There is a black rectangle on the left using simple rounded corners, and a blue rectangle on the right using smooth rounded corners. Inbetween those rectangles is a magnified view of the same corner from both rectangles overlapping to show the subtle difference in shape.](../images/0000/Summary.svg)
+![There is a black rectangle on the left using simple rounded corners, and a blue rectangle on the right using smooth rounded corners. Inbetween those rectangles is a magnified view of the same corner from both rectangles overlapping to show the subtle difference in shape.](../images/0012/Summary.svg)
 
 ## Summary
 
@@ -70,7 +70,7 @@ The corners of elements rounded by the CSS `border-radius` rule can be smoothed 
 </pre>
 </td>
 <td>
-<img src="../images/0000/Rectangle.svg" width="128" alt="" />
+<img src="../images/0012/Rectangle.svg" width="128" alt="" />
 </td>
 </tr>
 </table>
@@ -81,7 +81,7 @@ The `-electron-corner-smoothing` CSS rule controls how far the corner's curvatur
 
 To match the system rounding in macOS, use a value of `60%`. `-electron-corner-smoothing` is available across all Electron platforms.
 
-![A chart demonstrating values of the CSS rule and their visual effects on the same rectangle. The values of 0%, 30%, 60%, and 100% are demonstrated, with the 60% value being labeled as macOS.](../images/0000/Values.svg)
+![A chart demonstrating values of the CSS rule and their visual effects on the same rectangle. The values of 0%, 30%, 60%, and 100% are demonstrated, with the 60% value being labeled as macOS.](../images/0012/Values.svg)
 
 This smooth rounding is similar to Apple's "continuous" rounded corners in SwiftUI as well as Figma's "corner smoothing" control on design elements.
 
@@ -109,7 +109,7 @@ The procedure for smoothing the roundness of a corner is based on the research i
 
 At a high level, we're taking the points where the edges connect to the corner circle and stretching them back into the edge. Thus, instead of constructing a round corner with a quarter circle, we use two cubic Bézier curves to construct the corner.
 
-![A chart showing two constructions of a rounded corner. The first construction shows a quarter circle connected to two straight edges, with the points of connection highlighted. Arrows by those points indicate a stretching motion twoard the straight edge. The second construction shows the same corner with the connection points stretched backward, demonstrating the Bézier construction of a rounded corner.](../images/0000/Construction.svg)
+![A chart showing two constructions of a rounded corner. The first construction shows a quarter circle connected to two straight edges, with the points of connection highlighted. Arrows by those points indicate a stretching motion twoard the straight edge. The second construction shows the same corner with the connection points stretched backward, demonstrating the Bézier construction of a rounded corner.](../images/0012/Construction.svg)
 
 The two Bézier curves' control points are carefully chosen to retain the most important qualities of a rounded corner, including the percieved radius. The original article provides a full intuition for how the curve's control points are derived.
 
