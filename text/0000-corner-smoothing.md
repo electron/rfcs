@@ -87,6 +87,8 @@ This smooth rounding is similar to Apple's "continuous" rounded corners in Swift
 
 ## Reference-level explanation
 
+Integration with macOS's design language is a primary goal for this proposal. Enabling design customization is a secondary goal.
+
 To implement corner smoothing we will patch Blink with two additions: a CSS property and support for painting smooth corners.
 
 ### CSS Property
@@ -110,6 +112,8 @@ At a high level, we're taking the points where the edges connect to the corner c
 ![A chart showing two constructions of a rounded corner. The first construction shows a quarter circle connected to two straight edges, with the points of connection highlighted. Arrows by those points indicate a stretching motion twoard the straight edge. The second construction shows the same corner with the connection points stretched backward, demonstrating the Bézier construction of a rounded corner.](../images/0000/Construction.svg)
 
 The two Bézier curves' control points are carefully chosen to retain the most important qualities of a rounded corner, including the percieved radius. The original article provides a full intuition for how the curve's control points are derived.
+
+This method provides some creative control in choosing how far along the edge the corner's curve can extend into.
 
 ### Interactions & Corner Cases
 
@@ -165,13 +169,15 @@ It's not yet known what the drawbacks of this approach are. There may be problem
 
 ### Alternative: Web Standards
 
-There are existing proposals for similar features in some CSS standards:
+There are existing proposals in the same or similar problem spaces for some CSS standards:
 
 * [CSS Borders Level 4 Issue](https://github.com/w3c/csswg-drafts/issues/10653)
 * [CSS Backgrounds Level 4 Issue](https://github.com/w3c/csswg-drafts/issues/6296)
 * [CSS Shapes Level 2 Issue](https://github.com/w3c/csswg-drafts/issues/10993)
 
-Development on these standards moves slowly and their scopes extend far beyond just smooth round corners.
+Development on these standards moves slowly and their scopes extend far beyond just smooth round corners. These standards may never reach completion, or may not support smooth round corners in their completed form. Their chosen solutions for smooth round corners may not be compatible with macOS's design language, an important use case of this feature for our developers, as their priorities are not exactly the same as ours.
+
+To be clear, this feature is not intended to be standardized as it is designed now. Instead, the intent is to satisfy one very specific need of developers at present. If we were to pursue the standardization route, we would have to fudamentally rethink our appraoch.
 
 <!--
 - Why is this design the best in the space of possible designs?
@@ -196,7 +202,7 @@ Development on these standards moves slowly and their scopes extend far beyond j
 
 ### CSS
 
-Electron has dabbled in having its "own" CSS rules before. `-webkit-app-region` is a CSS rule that allows developers to define what regions in their application can drag the window. This CSS rule has been [proposed for standardization](https://github.com/w3c/csswg-drafts/issues/7017) as part of the proposed Window Controls Overlay feature. While implemented by Chromium before Electron existed, most developers know of the CSS rule because of Electron and have only used it here.
+Electron has dabbled in having its "own" CSS rules before. `-webkit-app-region` is a CSS rule that allows developers to define what regions in their application can drag the window. While implemented by Chromium before Electron existed, most developers know of the CSS rule because of Electron and have only used it here. This CSS rule has been [proposed for standardization](https://github.com/w3c/csswg-drafts/issues/7017) as part of the proposed Window Controls Overlay feature.
 
 <!--
 Discuss prior art, both the good and the bad, in relation to this proposal. A few examples of what
@@ -241,9 +247,7 @@ There may be desire from developers and designers for other shapes with smooth r
 
 ### Standardization
 
-A future Web standard may one day provide an equivalent feature. We should provide developers with a clear migration path to the standardized feature and deprecate this one.
-
-To be clear, this feature is not intended to be standardized as it is designed now. Instead, the intent is to satisfy one very specific need of developers at present.
+A future Web standard may one day provide an equivalent feature. In that event, we should provide developers with a clear migration path to the standardized feature and deprecate this one.
 
 <!--
 Think about what the natural extension and evolution of your proposal would be and how it would
