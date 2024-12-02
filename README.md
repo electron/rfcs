@@ -38,7 +38,7 @@ it may be closed with a polite request to submit an RFC first.
 
 ## Stages
 
-An RFC can exist in five different stages:
+An RFC can exist in six different stages:
 
 - **Proposed:** An RFC is Proposed if it has an open pull request with a spec document forked from
   the RFC template. At this point, community feedback can be gathered to drive consensus on the spec.
@@ -54,6 +54,10 @@ An RFC can exist in five different stages:
   **An Active RFC means that the idea is worth being implemented and explored, not that the
   maintainers are committing to adding it to Electron.** If a new development causes an Active
   RFC to become unnecessary in any way, maintainers can choose to ultimately decline it.
+- **Abandoned:** An RFC will be closed as Abandoned if it has no owner actively pushing it forward.
+  The original owner may reopen the PR, or a new owner may open a new PR if they are interested in pursuing it.
+  Maintainers will check interest in pursuing the RFC prior to labeling it abandoned and closing
+  the PR.
 - **Completed:** Once the implementation for an Active RFC is merged into Electron’s `main` branch
   and is slated for an upcoming release, it is marked as Completed with a PR to `electron/rfcs`
   containing the status change and a link to the `electron/electron` commit and target Electron release.
@@ -69,10 +73,13 @@ flowchart TD
   PC --> P;
   P --> D[Declined];
   A --> D;
-  style D fill:red;
-  style A fill:orange;
-  style C fill:lightgreen;
+  P --> AB[Abandoned];
+  AB --> P;
+  style D fill:darkred;
+  style A fill:darkorange;
+  style C fill:darkgreen;
   style PC fill:yellow;
+  style AB fill:gray;
 ```
 
 ## Process
