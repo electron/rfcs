@@ -33,24 +33,6 @@ Beyond the macOS platform, designers may decide to use smoother round corners fo
 
 ## Guide-level explanation
 
-<!--
-Explain the feature as if it were already implemented in Electron and you were teaching it to
-an Electron app developer.
-
-This section should:
-
-- Introduce new named concepts.
-- Show concrete examples of how the feature is used.
-- Explain how the feature will impact existing use cases of Electron.
-- If applicable, describe the migration path from an older set of Electron features or APIs.
-- Discuss how this impacts the ability to read, understand, and maintain Electron code. Will the
-  proposed feature make Electron code more maintainable? How difficult is the upgrade path for
-  existing apps?
-
-When writing this section, make sure to clearly account for API differences or considerations for
-Windows, macOS, and Linux.
--->
-
 The corners of elements rounded by the CSS `border-radius` rule can be smoothed out using the `-electron-corner-smoothing` feature.
 
 <table>
@@ -133,25 +115,11 @@ Applying smoothing to an existing round corner should retain as much of the orig
 
 More than just the corners of the element itself, `border-radius` also applies to other shapes, including borders, outlines, and shadows. These other shapes are derived from the element's shape. `-electron-corner-smoothing` also applies to these same shapes to maintain consistency.
 
-<!--
-This is the technical portion of the RFC. Explain the design in sufficient detail that:
-
-- Its interaction with other features is clear.
-- It is reasonably clear how the feature would be implemented.
-- Corner cases are dissected by example.
-- Any new dependencies on Chromium code are outlined.
-
-The section should return to the examples given in the previous section, and explain more fully how
-the detailed proposal makes those examples work.
--->
-
 ## Drawbacks
 
 Electron rarely makes changes to Blink. The few exceptions include exposing the `<webview>` element, exposing the `-webkit-app-region` CSS rule, and increasing the threshold for Web Storage APIs. With this feature, we would maintain a medium-sized patch for a feature *addition*.
 
 Testing this feature will require reliable visual testing and a comprehensive test suite. Writing and running these tests may require more resources than other Electron features.
-
-<!-- Why should we *not* do this? -->
 
 ## Rationale and alternatives
 
@@ -179,15 +147,6 @@ Development on these standards moves slowly and their scopes extend far beyond j
 
 To be clear, this feature is not intended to be standardized as it is designed now. Instead, the intent is to satisfy one very specific need of developers at present. If we were to pursue the standardization route, we would have to fudamentally rethink our appraoch.
 
-<!--
-- Why is this design the best in the space of possible designs?
-- What other designs have been considered and what is the rationale for not choosing them?
-- What is the impact of not doing this?
-- If this is an API proposal, could this be done as a JavaScript module or a native Node.js add-on
-  instead? Does the proposed change make Electron code easier or harder to read, understand,
-  and maintain?
--->
-
 ## Prior art
 
 ### Smooth Rounded Corners
@@ -204,21 +163,6 @@ To be clear, this feature is not intended to be standardized as it is designed n
 
 Electron has dabbled in having its "own" CSS rules before. `-webkit-app-region` is a CSS rule that allows developers to define what regions in their application can drag the window. While implemented by Chromium before Electron existed, most developers know of the CSS rule because of Electron and have only used it here. This CSS rule has been [proposed for standardization](https://github.com/w3c/csswg-drafts/issues/7017) as part of the proposed Window Controls Overlay feature.
 
-<!--
-Discuss prior art, both the good and the bad, in relation to this proposal. A few examples of what
-this can include are:
-
-- Does this feature exist in other frameworks and what experience have their community had?
-- Does this feature exist as a userland implementation, and what can be learned from it?
-- Is this related to a change upstream in Chromium or Node.js?
-- Does this proposal help Electron further align with evolving web standards?
-
-This section is intended to encourage you as an author to think about the lessons from prior
-implementations to provide readers of your RFC with a fuller picture. If there is no prior art,
-that is fine - your ideas are interesting to us whether they are brand new or if it is an
-adaptation from other technologies.
--->
-
 ## Unresolved questions
 
 ### Resolve Through RFC Process
@@ -231,14 +175,6 @@ adaptation from other technologies.
 - Should patching be done on the different "Painter" classes or only the `GraphicsContext` class?
 - Testing strategy
 
-<!--
-- What parts of the design do you expect to resolve through the RFC process before this gets merged?
-- What parts of the design do you expect to resolve through the implementation of this feature
-  before stabilization?
-- What related issues do you consider out of scope for this RFC that could be addressed in the
-  future independently of the solution that comes out of this RFC?
--->
-
 ## Future possibilities
 
 ### Other Shapes
@@ -248,19 +184,3 @@ There may be desire from developers and designers for other shapes with smooth r
 ### Standardization
 
 A future Web standard may one day provide an equivalent feature. In that event, we should provide developers with a clear migration path to the standardized feature and deprecate this one.
-
-<!--
-Think about what the natural extension and evolution of your proposal would be and how it would
-affect the project as a whole in a holistic way. Try to use this section as a tool to more fully
-consider all possible interactions with the project in your proposal.
-
-This is also a good place to "dump ideas", if they are out of scope for the RFC you are writing but
-otherwise related.
-
-If you have tried and cannot think of any future possibilities, you may simply state that you
-cannot think of anything.
-
-Note that having something written down in the future possibilities section is not a reason to
-accept the current or a future RFC; such notes should be in the section on motivation or
-rationale in this or subsequent RFCs. The section merely provides additional information.
--->
