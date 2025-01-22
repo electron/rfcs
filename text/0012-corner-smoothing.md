@@ -57,11 +57,13 @@ The corners of elements rounded by the CSS `border-radius` rule can be smoothed 
 </tr>
 </table>
 
-The `-electron-corner-smoothing` CSS rule is **only implemented for Electron** and has no effect in browsers. Avoid using this rule outside of Electron.
+The `-electron-corner-smoothing` CSS rule is **only implemented for Electron** and has no effect in browsers. Avoid using this rule outside of Electron. This CSS rule is considered experimental and may require migration in the future if replaced by a CSS standard.
 
-The `-electron-corner-smoothing` CSS rule controls how far the corner's curvature can extend into the edge of the element. It is a percentage between `0%` (default) and `100%`. `-electron-corner-smoothing` affects the shape of borders, outlines, and shadows on the target element.
+The `-electron-corner-smoothing` CSS rule controls how much of the edge can be used for corner curvature:
+* It is a percentage between `0%` (default) and `100%`. The value `100%` represents maximum smoothing, but may not consume the full edge.
+* The keyword `system-ui` can be used to pick a value that matches the current OS UI.
 
-To match the system rounding in macOS, use a value of `60%`. `-electron-corner-smoothing` is available across all Electron platforms.
+`-electron-corner-smoothing` affects the shape of borders, outlines, and shadows on the target element. Similar to `border-radius`, smoothing will gradually back off if an element's size becomes too small for the chosen value.
 
 ![A chart demonstrating values of the CSS rule and their visual effects on the same rectangle. The values of 0%, 30%, 60%, and 100% are demonstrated, with the 60% value being labeled as macOS.](../images/0012/Values.svg)
 
