@@ -158,6 +158,7 @@ To be clear, this feature is not intended to be standardized as it is designed n
   * [CSS Borders Level 4 Issue](https://github.com/w3c/csswg-drafts/issues/10653)
   * [CSS Backgrounds Level 4 Issue](https://github.com/w3c/csswg-drafts/issues/6296)
   * [CSS Shapes Level 2 Issue](https://github.com/w3c/csswg-drafts/issues/10993)
+* [Flutter: Add rounded superellipse](https://github.com/flutter/engine/pull/56726)
 
 ### CSS
 
