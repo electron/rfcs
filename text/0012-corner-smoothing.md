@@ -69,6 +69,8 @@ The `-electron-corner-smoothing` CSS rule controls how much of the edge can be u
 
 This smooth rounding is similar to Apple's "continuous" rounded corners in SwiftUI as well as Figma's "corner smoothing" control on design elements.
 
+This CSS rule can be disabled using the `cornerSmoothingCSS` [web preference](https://www.electronjs.org/docs/latest/api/structures/web-preferences).
+
 ## Reference-level explanation
 
 Integration with macOS's design language is a primary goal for this proposal. Enabling design customization is a secondary goal.
@@ -170,13 +172,17 @@ Electron has dabbled in having its "own" CSS rules before. `-webkit-app-region` 
 
 ### Resolve Through RFC Process
 
-- Is fingerprinting a major concern of this feature?
-- Should this feature be gated by a `WebContents` option?
+- [x] Is fingerprinting a major concern of this feature?
+  - Resolved: Fingerprinting is a concern, but not a major concern. See next question for details.
+- [x] Should this feature be gated by a `WebContents` option?
+  - Resolved: A `WebPreferences` option should be added so developers can disable this functionality.
 
 ### Resolve Through Implementation
 
-- Should patching be done on the different "Painter" classes or only the `GraphicsContext` class?
-- Testing strategy
+- [x] Should patching be done on the different "Painter" classes or only the `GraphicsContext` class?
+  - Resolved: Mostly patching `GraphicsContext`, with additional patches to calls of specific `FloatRoundedRect` methods.
+- [x] Testing strategy
+  - Resolved: Similar to some WPT tests, the rendered output of a demo Web document is compared to a reference known-correct output.
 
 ## Future possibilities
 
