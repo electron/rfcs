@@ -24,7 +24,7 @@ in Chromium
 
 ## Guide-level explanation
 
-We propose an API for hyphenation data similar to the existing spellChecker API in Electron. The reason for this is that spell checking data in Chromium is similarly downloaded on launch (rather than shipping with the renderer) and Electron replicates this behavior through an API.
+We propose an API for hyphenation data similar to the existing [spellChecker API](https://www.electronjs.org/docs/latest/tutorial/spellchecker) in Electron. The reason for this is that spell checking data in Chromium is similarly downloaded on launch (rather than shipping with the renderer) and Electron replicates this behavior.
 
 ### Enabling hyphenation
 
@@ -72,7 +72,7 @@ the detailed proposal makes those examples work.
 
 Hyphenation data is downloaded using the [ComponentUpdater](https://source.chromium.org/chromium/chromium/src/+/main:components/component_updater/README.md) in Chromium and used in `ContentBrowserClient::GetHyphenationDictionary()`
 
-In Electron, `GetHyphenationDictionary()` can be implemented on `ElectronBrowserClient`
+In Electron, `GetHyphenationDictionary()` can be implemented on `ElectronBrowserClient`.
 
 ## Drawbacks
 
