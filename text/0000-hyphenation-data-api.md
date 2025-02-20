@@ -39,7 +39,7 @@ const myWindow = new BrowserWindow({
 ```
 _We should consider making this behavior the default, as the spellChecker API is also enabled by default_
 
-This will enable hyphenation for the languages that are supported by the hyphenation data file, which is automatically downloaded.
+This will enable hyphenation for the languages that are supported by the hyphenation data files, which is automatically downloaded.
 
 ### Use of Google services
 
