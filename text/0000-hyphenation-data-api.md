@@ -50,7 +50,7 @@ myWindow.webContents.session.setHyphenationDataDownloadURL('https://example.com/
 
 ### Consideration: list supported languages
 
-The spellcheck API has a method to list the supported languages. We should consider adding a similar method to list the supported languages for hyphenation, if that is feasible.
+The spellcheck API has a method to list the supported languages. We should consider adding a similar method to list the supported languages for hyphenation:
 
 ```js
 // an array of all available languages for hyphenation
@@ -70,9 +70,15 @@ the detailed proposal makes those examples work.
 
 -->
 
-Hyphenation data is downloaded using the [ComponentUpdater](https://source.chromium.org/chromium/chromium/src/+/main:components/component_updater/README.md) in Chromium and used in `ContentBrowserClient::GetHyphenationDictionary()`
+Chromium requests hyphenation data via [`ContentBrowserClient::GetHyphenationDictionary()`](https://source.chromium.org/chromium/chromium/src/+/main:content/public/browser/content_browser_client.h;l=2818;drc=b0423977b6ed86291838e90231b036b68784aae3). [`ChromeContentBrowserClient`'s override of this method](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/chrome_content_browser_client.cc;l=8168;drc=f667feb8a5c6f227b49328ce78a062acc4f81187) uses the [ComponentUpdater](https://source.chromium.org/chromium/chromium/src/+/main:components/component_updater/README.md) to download the data.
 
-In Electron, `GetHyphenationDictionary()` can be implemented on `ElectronBrowserClient`.
+In Electron, `GetHyphenationDictionary()` can be overridden by `ElectronBrowserClient`. This needs to download the hyphenation data and then run the callback passed to it with the directory containing the downloaded files.
+
+Downloading the hyphenation data is the difficult part. Electron doesn't use the Component Updater, and manually downloading and extracting the hyphenation data component seems suboptimal. However, the data could instead be downloaded from <https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/hyphenation-patterns/hyb> ([gz'ed path](https://chromium.googlesource.com/chromium/src/+archive/refs/heads/main/third_party/hyphenation-patterns/hyb.tar.gz), 1086 KiB). The component downloaded by Chromium has exactly the same contents as that directory. Alternatively, Electron could move the responsibility of downloading the hyphenation data to the user.
+
+### Listing supported languages
+
+The hyphenation data is stored in one file per language, so listing the supported languages could be as easy as iterating over the contents of the data directory and returning the filenames (stripped of the `hyph-` prefix and the `.hyb` extension).
 
 ## Drawbacks
 
@@ -96,8 +102,7 @@ This feature brings Electron in line with Chromium.
 
 ## Unresolved questions
 
-- What parts of Electron will need to be modified to support this feature?
-- Do we need to patch Chromium to make this work?
+- Where should Electron download the hyphenation data from?
 - Should the API be enabled by default?
 - Should we provide a way to list the supported languages for hyphenation?
 
