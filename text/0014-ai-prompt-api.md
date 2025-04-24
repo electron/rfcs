@@ -31,12 +31,20 @@ their choice.
 For the initial implementation, the local AI handler will only support the prompt API,
 but the long term intention is that this handler would also support other Built-in AI APIs.
 
-
 ### Session.registerLocalAIHandlerScript
 
 `ses.registerLocalAIHandlerScript(options)`
 * `options` Object
   * `filePath` string - Path of the script file. Must be an absolute path.
+
+Returns `string` - The ID of the registered local AI handler script.
+
+`ses.unregisterPreloadScript(id)`
+
+* `id` string - local AI handler script ID
+
+Unregisters the specified local AI handler script and terminates the associated
+utility process if it is running.
 
 ### localAIHandler
 
@@ -51,12 +59,10 @@ This module is intended to be used by a script registered to a session via
 
 The `localAIHandler` module has the following methods:
 
-##### `localAIHandler.setPromptAPIModel(model)`
-
-* `model` [LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)| null
-  
-This model will be called when web content calls the [Prompt API](https://github.com/webmachinelearning/prompt-api).
-
+##### `localAIHandler.setPromptAPIHandler(handler)`
+* `handler` Function\<[LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)\> | null  
+  * `webContents` ([WebContents](web-contents.md) | null) - WebContents calling the Prompt API.
+  The webContents may be null if the Prompt API is called from a service worker or shared worker.
 
 > Main process
 
@@ -76,7 +82,12 @@ app.whenReady().then(() => {
 const { localAIHandler } = require('electron/utility');
 
 class ElectronAI {
+  #webContentsId;
   #languageModel;
+
+  constructor(webContents) {
+    this.#webContentsId = webContents.id;
+  }
 
   async createInternal(options) {
     this.#languageModel = //Initialize local LLM.
@@ -109,17 +120,20 @@ class ElectronAI {
   }
 }
 
-localAIHandler.setPromptAPIModel(ElectronAI);
+localAIHandler.setPromptAPIHandler((webContents) => new ElectronAI(webContents));
 ```
 
 ## Reference-level explanation
 
-1. Create an implementation of [blink::mojom::AILanguageModel](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/ai/ai_language_model.mojom) that can be associated to a `electron::api::Session`. `content/browser/ai/echo_ai_language_model.cc` can be used as a basis for this implementation.  If a handler is defined for the associated session then the blink::mojom::AILanguageModel functions should proxy their calls to that handler.
+1. Create an implementation of [blink::mojom::AILanguageModel](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/ai/ai_language_model.mojom) that can be associated to a utility process. `content/browser/ai/echo_ai_language_model.cc` can be used as a basis for this implementation.  The blink::mojom::AILanguageModel functions will use the specified utility process to proxy their calls to that handler.
 
-2. Create an implementation of [blink::mojom::AIManager](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/ai/ai_manager.mojom) that can be associated to a `electron::api::Session`. `content/browser/ai/echo_ai_manager_impl.cc` can be used as a basis for this implementation. `CanCreateLanguageModel` should check if there is an prompt API handler assigned to the associated session. `CreateLanguageModel` should invoke `create` on the object returned from the prompt API handler.  Additionally, `CreateLanguageModel` should instantiate the implementation of `blink::mojom::AILanguageModel` mentioned above with the current `electron::api::Session`.  The rest of the functions in this class will either be unimplemented for now or alternatively they can use the currently defined echo implementation in `content/browser/ai/`.
+2. Create an implementation of [blink::mojom::AIManager](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/ai/ai_manager.mojom) that can be associated to a `electron::api::Session` and
+`electron::api::WebContents`. . `content/browser/ai/echo_ai_manager_impl.cc` can be used as a basis for this implementation. `CanCreateLanguageModel` should check if there is a Local AI Handler Script assigned to the associated session. `CreateLanguageModel` should create a new utility process with the specified script, invoke the prompt API handler
+in the script and then invoke `create` on the object returned from the prompt API handler.  Additionally, `CreateLanguageModel` should instantiate the implementation of `blink::mojom::AILanguageModel` mentioned above with the current utility process.  The rest of the functions in this class will either be unimplemented for now or alternatively they can use the currently defined echo implementation in `content/browser/ai/`.
 
 3. Implement [BindAIManager](https://source.chromium.org/chromium/chromium/src/+/main:content/public/browser/content_browser_client.h;l=3151) in ElectronBrowserClient.  The BrowserContext passed in can be used to get the
-associated `electron::api::Session`.
+associated `electron::api::Session` and the RenderFrameHost passed in can be used to get the associated
+`electron::api::WebContents`.
 
 ## Drawbacks
 
