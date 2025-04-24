@@ -22,50 +22,84 @@ also support these features.
 
 ## Guide-level explanation
 
-The Prompt API can be used by Electron app developers by defining a Prompt API handler
-via `Session.setPromptAPIHandler`.  This handler will allow app developers to proxy
-Prompt API calls to a local LLM implementation of their choice.
+The Prompt API can be used by Electron app developers by defining a local AI handler
+script via `Session.registerLocalAIHandlerScript` and a new module `localAIHandler`.
+The handler script will run in a [utilityProcess](https://www.electronjs.org/docs/latest/api/utility-process)
+and will allow app developers to proxy Built-in API calls to a local LLM implementation of
+their choice.
 
-`ses.setPromptAPIHandler(handler)`
-* `handler` Function\<[LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)\> | null
+For the initial implementation, the local AI handler will only support the prompt API,
+but the long term intention is that this handler would also support other Built-in AI APIs.
+
+
+### Session.registerLocalAIHandlerScript
+
+`ses.registerLocalAIHandlerScript(options)`
+* `options` Object
+  * `filePath` string - Path of the script file. Must be an absolute path.
+
+### localAIHandler
+
+> Proxy Built-in AI APIs to a local LLM implementation
+
+Process: [utility](https://www.electronjs.org/docs/latest/api/utility-process)
+
+This module is intended to be used by a script registered to a session via
+`ses.registerLocalAIHandlerScript(options)`
+
+#### Methods
+
+The `localAIHandler` module has the following methods:
+
+##### `localAIHandler.setPromptAPIModel(model)`
+
+* `model` [LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)| null
   
-This handler will be called when web content calls the [Prompt API](https://github.com/webmachinelearning/prompt-api).
+This model will be called when web content calls the [Prompt API](https://github.com/webmachinelearning/prompt-api).
 
-The handler should return a [Language Model Object](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl).
 
-Given the demands of running LLM locally, a utility process should be used to offload processing.  For example:
+> Main process
 
 ```js
-const { session, utilityProcess } = require('electron/main');
+const { session } = require('electron');
+
+app.whenReady().then(() => {
+  session.defaultSession.registerLocalAIHandlerScript({
+    filePath: 'PATH TO HANDLER SCRIPT'
+  })
+})
+```
+
+> Utility script
+
+```js
+const { localAIHandler } = require('electron/utility');
 
 class ElectronAI {
-  #aiProcess; //utilityProcess to handle LLM processing.  
+  #languageModel;
 
   async createInternal(options) {
-    this.#aiProcess = utilityProcess.fork(utilityScriptPath, [], {
-        stdio: ['ignore', 'pipe', 'pipe', 'pipe'],
-    });
-  }
+    this.#languageModel = //Initialize local LLM.
+  }  
 
   async prompt(input = '', options) {
-    if (!this.#aiProcess) {
+    if (!this.#languageModel) {
       throw new Error('AI model process not started');
     }
-    this.#aiProcess.postMessage({
-      type: UTILITY_MESSAGE_TYPES.SEND_PROMPT,
-      data: { input, stream: false, options },
-    });    
+    return #languageModel.prompt(input, options);
   }
 
   async destroy() {
-    if (this.#aiProcess) {
-      this.#aiProcess.postMessage({ type: UTILITY_MESSAGE_TYPES.STOP });    
+    if (this.#languageModel) {
+      this.#languageModel.destroy();
     }
-    this.#aiProcess = null;
   }
 
   async promptStreaming(input = '', options) {
-    //Use aiProcess to handle prompt streaming
+    if (!this.#languageModel) {
+      throw new Error('AI model process not started');
+    }
+    return #languageModel.promptStreaming(input, options);
   }
 
   static async create(options) {
@@ -75,14 +109,14 @@ class ElectronAI {
   }
 }
 
-session.defaultSession.setPromptAPIHandler(() => { ElectronAI });
+localAIHandler.setPromptAPIModel(ElectronAI);
 ```
 
 ## Reference-level explanation
 
 1. Create an implementation of [blink::mojom::AILanguageModel](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/ai/ai_language_model.mojom) that can be associated to a `electron::api::Session`. `content/browser/ai/echo_ai_language_model.cc` can be used as a basis for this implementation.  If a handler is defined for the associated session then the blink::mojom::AILanguageModel functions should proxy their calls to that handler.
 
-2. Create an implmentation of [blink::mojom::AIManager](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/ai/ai_manager.mojom) that can be associated to a `electron::api::Session`. `content/browser/ai/echo_ai_manager_impl.cc` can be used as a basis for this implementation. `CanCreateLanguageModel` should check if there is an prompt API handler assigned to the associated session. `CreateLanguageModel` should invoke `create` on the object returned from the prompt API handler.  Additionally, `CreateLanguageModel` should instantiate the implementation of `blink::mojom::AILanguageModel` mentioned above with the current `electron::api::Session`.  The rest of the functions in this class will either be unimplemented for now or alternatively they can use the currently defined echo implementation in `content/browser/ai/`.
+2. Create an implementation of [blink::mojom::AIManager](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/ai/ai_manager.mojom) that can be associated to a `electron::api::Session`. `content/browser/ai/echo_ai_manager_impl.cc` can be used as a basis for this implementation. `CanCreateLanguageModel` should check if there is an prompt API handler assigned to the associated session. `CreateLanguageModel` should invoke `create` on the object returned from the prompt API handler.  Additionally, `CreateLanguageModel` should instantiate the implementation of `blink::mojom::AILanguageModel` mentioned above with the current `electron::api::Session`.  The rest of the functions in this class will either be unimplemented for now or alternatively they can use the currently defined echo implementation in `content/browser/ai/`.
 
 3. Implement [BindAIManager](https://source.chromium.org/chromium/chromium/src/+/main:content/public/browser/content_browser_client.h;l=3151) in ElectronBrowserClient.  The BrowserContext passed in can be used to get the
 associated `electron::api::Session`.
@@ -105,5 +139,5 @@ Additionally, [node-llama-cpp](https://github.com/withcatai/node-llama-cpp/blob/
 
 ## Future possibilities
 
-- Support for other built in AI APIS
+- Support for other built in AI APIs
 - Default implementation of the Prompt API so that Electron app developers do not need to create their own.
