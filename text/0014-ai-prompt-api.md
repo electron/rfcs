@@ -46,6 +46,14 @@ Returns `string` - The ID of the registered local AI handler script.
 Unregisters the specified local AI handler script and terminates the associated
 utility process if it is running.
 
+`ses.getUtilityProcessForLocalAI(id)`
+
+* `id` string - local AI handler script ID
+
+Returns [`UtilityProcess`](utility-process.md#class-utilityprocess) | null - if the specified
+local AI handler script has an associated utility process running it will be returned; 
+otherwise it returns null.
+
 ### localAIHandler
 
 > Proxy Built-in AI APIs to a local LLM implementation
@@ -60,9 +68,11 @@ This module is intended to be used by a script registered to a session via
 The `localAIHandler` module has the following methods:
 
 ##### `localAIHandler.setPromptAPIHandler(handler)`
-* `handler` Function\<[LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)\> | null  
-  * `webContents` ([WebContents](web-contents.md) | null) - WebContents calling the Prompt API.
-  The webContents may be null if the Prompt API is called from a service worker or shared worker.
+* `handler` Function\<[LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)\> | null
+  * `webContentsId` (Integer | null) - The unique id of the [WebContents](web-contents.md)
+  calling the Prompt API. The webContents id may be null if the Prompt API is called from
+  a service worker or shared worker.
+  * `securityOrigin` String - Origin of the page calling the Prompt API.
 
 > Main process
 
