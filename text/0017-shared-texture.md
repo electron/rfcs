@@ -1,6 +1,6 @@
 - Start Date: 2025-05-16
 - RFC PR: [electron/rfcs#17](https://github.com/electron/rfcs/pull/17)
-- Electron Issues: [electron/electron#46779](https://github.com/electron/electron/issue/46779)
+- Electron Issues: [electron/electron#46779](https://github.com/electron/electron/issues/46779)
 - Reference Implementation: [electron/electron#46811](https://github.com/electron/electron/pull/46811)
 - Status: **Proposed**
 
