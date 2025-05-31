@@ -355,7 +355,7 @@ The lifecycle of objects should be take good care of. Let's take the above use c
 9. For similar reason, we can then call `release` on `importedTextureRenderer`, as we've done everything at renderer process. We pass a callback to the `release` function, which use `SyncToken` to ensure the callback is triggered after all submitted tasks are executed by GPU, and it's safe to do further release.
 10. Now, we can notify main process to release `importedTextureMain`. It's suggested to use callback to release `originTexture` safely.
 
-![Lifecycle](../images/0017/lifecycle.png)
+![Lifecycle](../images/0017/lifecycle.excalidraw.png)
 
 ## Reference-level explanation
 
