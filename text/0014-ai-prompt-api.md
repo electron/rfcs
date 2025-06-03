@@ -31,7 +31,7 @@ their choice.
 For the initial implementation, the local AI handler will only support the prompt API,
 but the long term intention is that this handler would also support other Built-in AI APIs.
 
-### Session.registerLocalAIHandlerScript
+### Session
 
 `ses.registerLocalAIHandlerScript(options)`
 * `options` Object
@@ -39,7 +39,7 @@ but the long term intention is that this handler would also support other Built-
 
 Returns `string` - The ID of the registered local AI handler script.
 
-`ses.unregisterPreloadScript(id)`
+`ses.unregisterLocalAIHandlerScript(id)`
 
 * `id` string - local AI handler script ID
 
@@ -53,6 +53,15 @@ utility process if it is running.
 Returns [`UtilityProcess`](utility-process.md#class-utilityprocess) | null - if the specified
 local AI handler script has an associated utility process running it will be returned; 
 otherwise it returns null.
+
+#### Event: 'local-ai-utility-started'
+
+Returns:
+
+* `event` Event
+* `id` string - local AI handler script ID
+
+Emitted when a utility process is started for the specified local AI handler script.
 
 ### localAIHandler
 
@@ -130,7 +139,7 @@ class ElectronAI {
   }
 }
 
-localAIHandler.setPromptAPIHandler((webContents) => new ElectronAI(webContents));
+localAIHandler.setPromptAPIHandler((webContentsId, securityOrigin) => new ElectronAI(webContents, securityOrigin));
 ```
 
 ## Reference-level explanation
