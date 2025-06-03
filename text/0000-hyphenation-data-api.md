@@ -41,12 +41,34 @@ _We should consider making this behavior the default, as the spellChecker API is
 
 This will enable hyphenation for the languages that are supported by the hyphenation data files, which is automatically downloaded.
 
+### Session APIs and events
+
+Like spellChecker, there should be an number of session methods and events available:
+
+**Instance methods**
+
+`ses.setHyphenationEnabled(enable)` - sets whether to enable hyphenation.
+`ses.isHyphenationEnabled()` - returns `boolean` Whether hyphenation is enabled
+
+**Instance Properties**
+
+`ses.hyphenationEnabled` - a `boolean` indicating whether hyphenation is enabled
+
+**Instance Events**
+
+- `hyphenation-data-download-begin` - returns: `event`. Emits when hyphenation data starts downloading.
+- `hyphenation-data-download-success` - returns: `event`. Emits when hyphenation data has been successfully downloaded.
+- `hyphenation-data-download-failure` - returns: `event`. Emits when hyphenation download fails.
+
+_Note: I'm not sure it makes sense to download hyphenation data for just specific languages at once, so omitted that logic here_
+
 ### Use of Google services
 
 Like the spellChecker API, hyphen-data files are downloaded from a Google CDN. If you want to avoid this you can provide an alternative URL to download the hyphen-data from: 
 ```javascript
 myWindow.webContents.session.setHyphenationDataDownloadURL('https://example.com/hyphen-data/')
 ```
+
 
 ### Consideration: list supported languages
 
