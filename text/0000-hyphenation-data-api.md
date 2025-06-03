@@ -47,12 +47,12 @@ Like spellChecker, there should be an number of session methods and events avail
 
 **Instance methods**
 
-`ses.setHyphenationEnabled(enable)` - sets whether to enable hyphenation.
-`ses.isHyphenationEnabled()` - returns `boolean` Whether hyphenation is enabled
+- `ses.setHyphenationEnabled(enable)` - sets whether to enable hyphenation.
+- `ses.isHyphenationEnabled()` - returns `boolean` Whether hyphenation is enabled
 
 **Instance Properties**
 
-`ses.hyphenationEnabled` - a `boolean` indicating whether hyphenation is enabled
+- `ses.hyphenationEnabled` - a `boolean` indicating whether hyphenation is enabled
 
 **Instance Events**
 
