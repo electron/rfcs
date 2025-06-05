@@ -26,7 +26,7 @@ Window state persistence represents a core functionality that many production El
  
 It's useful for developers who want to implement save/restore window state for their apps reliably. Different apps have different needs. An example use case for this API would be for when apps want to preserve window position (with display overflow) and size across multi-monitor setups with different display scales and resolutions.
 
-`windowStateRestoreOptions` aims to cover most save/restore use cases while providing room for future extension.
+`windowStateRestoreOptions` aims to cover most save/restore use cases while providing room for future extensions.
 
 **What is the expected outcome?**
 
@@ -71,8 +71,8 @@ Here's the schema I propose for the `windowStateRestoreOptions` object. This is 
 ```json
 "windowStateRestoreOptions": {
     "stateId": string, 
-    "bounds": true,
-    "displayMode": true
+    "bounds": boolean,
+    "displayMode": boolean
   }
 ```
 > [!NOTE]
@@ -246,7 +246,7 @@ Returns `boolean` - Whether the preferences were successfully restored and appli
 Preferences will be restored in the order of the options object passed during savePreferences.
 ```js
 // Restore the previously saved preferences
-const success = win.restoreWindowPreferences()
+const success = win.restorePreferences()
 console.log(success) // true if state was successfully restored
 ```
 
@@ -256,7 +256,7 @@ Clears the saved state for the window **including bounds and save policy itself*
 
 ```js
 // Clear the entire saved state for the window
-const success = win.clearSavedState()
+const success = win.clearPreferences()
 console.log(success) // true if state was successfully cleared
 ```
 
@@ -326,7 +326,7 @@ For the preferences it will be important to store the order of the properties as
 The algorithm would be simple two step approach:
 
 **Calculate new bounds:**
-This step invovles checking if the window is reopened on the same display by comparing the current work_area to the saved work_area, setting minimum height and width for the window (100, 100) if it's too less, ensuring proper fallback behaviour for when window is restored out of bounds or with overflow
+This step involves checking if the window is reopened on the same display by comparing the current work_area to the saved work_area, setting minimum height and width for the window (100, 100), ensuring proper fallback behaviour for when window is restored out of bounds or with overflow
 There are some tricks we can use from [WindowSizer::AdjustBoundsToBeVisibleOnDisplay](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=350)
 
 **Set window state:**
@@ -369,7 +369,7 @@ existing apps?*
 
 It would be the same code for Windows, macOS, and Linux using Chromium's PrefService. I think it would be easy to read, understand, and maintain the new Electron code.
 
-The path to upgrade for apps would be developers removing their existing implementation and using this new API if they want to. If their implementation is on the JavaScript side it will always execute their restore logic after window construction which means our implementation would be overridden.
+The path to upgrade for apps would be for developers to remove their existing implementation and use this new API if they want to. If their implementation is on the JavaScript side it will always execute their restore logic after window construction which means our implementation would be overridden.
 
 
 ## Reference-level explanation
@@ -378,7 +378,7 @@ Covered in the [Implementation Details](#implementation-details) section.
 
 
 ## Drawbacks
-- Writing to disk everytime window is moved or resized in a batched 10 second window might not be necessary and better to write to disk only on window close synchronously.
+- Writing to disk everytime the window is moved or resized in a batched 10 second window might not be necessary and better to write to disk only on window close synchronously.
 - Similar outcomes could be achieved via JavaScript APIs with miniscule performance difference. The only issue being the window state is not set at the right time in the window lifecycle.
 
 Why should we *not* do this?
@@ -389,7 +389,7 @@ Why should we *not* do this?
 
 *Why is this design the best in the space of possible designs?* 
   
-  Overall, providing a constructor option is the best design in my opinion. It provides maximum flexibility and future-proofing for different requests in the future. It also sets the window properties at the right time in the window lifecycle. Although not perfect right now, it can be improved by the community based on different use cases quite easily. We're also saving the window state in a continuous manner so it could be restored even after crashes.
+  Overall, providing a constructor option is the best design in my opinion. It provides maximum flexibility and future-proofing for different requests in the future. It also sets the window properties at the right time in the window lifecycle. Although not perfect right now, it can be improved by the community based on different use cases quite easily. We're also saving the window state in a continuous manner so it can be restored even after crashes.
 
 *What other designs have been considered and what is the rationale for not choosing them?*
   
@@ -401,7 +401,7 @@ It's not a critical issue. Apps might vanish on rare occasions.
 
 *If this is an API proposal, could this be done as a JavaScript module or a native Node.js add-on?*
   
-The real value proposition isn't that this functionality can't be implemented in JavaScript - it absolutely can and has been attempted through various community libraries. Rather, the value lies in providing a standardized, well-maintained solution integrated directly into Electron's core. There's also miniscule performance benefits as it would avoid extra ipc calls while restoring window state. 
+The real value proposition isn't that this functionality can't be implemented in JavaScript - it absolutely can and has been attempted through various community libraries. Rather, the value lies in providing a standardized, well-maintained solution integrated directly into Electron's core. There's also a miniscule performance benefits as it would avoid extra ipc calls while restoring window state. 
 
 ## Prior art
 
@@ -409,13 +409,12 @@ Electron devTools persists bounds using PrefService. Implementation can be seen 
 It also seems likely Chrome uses PrefService to store their window bounds [reference](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/chrome/browser/prefs/README.md).
 
 From my research, I found out native applications built directly with the operating system's own tools and frameworks often get window state persistence for free (macOS, Windows).
-I thought it would be innapropriate to enforce such rules on Electron apps. Thus, `windowStateRestoreOptions` to provide flexibility and the choice to opt-in to this behavior.
+I thought it would be inappropriate to enforce such rules on Electron apps. Thus, `windowStateRestoreOptions` to provide flexibility and the choice to opt-in to this behavior.
 
 ## Unresolved questions
 *What parts of the design do you expect to resolve through the RFC process before this gets merged?*
 - Variable names and the entire API Spec.
-- Are there any other edge cases that this proposal missed?
-- Restoring split screen for macOS. Should it be treated as normal or fullscreen restore? I think we can go ahead restoring as though it was fullscreened as apps need to go fullscreen to have a split view on macOS.
+- Restoring split screen for macOS. Should it be treated as normal or fullscreen restore? I think we can go ahead restoring as though it was fullscreened because apps need to go fullscreen to have a split view on macOS.
 
 *What parts of the design do you expect to resolve through the implementation of this feature
 before stabilization?*
@@ -446,23 +445,22 @@ Introduce custom behavior under `fallbackBehaviour` and `openBehaviour` paramete
 
 
 We would need an algorithm that calculates bounds based on these parameters.
-During restore we would have to respect `openBehaviour` before restoring our state.
+During window restore we would have to respect `openBehaviour` before restoring our state.
 
 Default `fallbackBehaviour` would be `snapToNearestDisplayEdge` if out of bounds.
-This parameter would provide a declarative way to define how the window should behave if it restored out of bounds.
+This parameter would provide a declarative way to define how the window should behave if it was restored out of bounds.
 
-Both of these were part of the initial GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6)
+Both of these were part of the initial GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6).
 
-The algorithm to restore window state is detailed in this [section](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6#algorithm-for-savingrestoring-the-window-state)
+The algorithm to restore window state is detailed in this [section](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6#algorithm-for-savingrestoring-the-window-state).
 
-One particular cool feature would be to provide an option to restore the window on closest available display/space dynamically.
+One particularly cool feature would be to provide an option to restore the window on closest available display/space dynamically.
 
-The `bounds` property could possible switched from boolean to an object that allows more configurability and control over reopening windows
-on different monitors with different dpi scaling and resolution.
+The `bounds` property could possibly be switched from boolean to an object that allows more configurability and control over reopening windows on different monitors with different dpi scaling and resolution.
 
 We could add `allowOverflow` property inside the object to control the restore overflow behaviour (some apps would specifically like to not restore in an overflown state). In our current implementation we can have something like [this](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=402).
 
-Again, everything is covered in this GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6)
+Again, everything is covered in this GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6).
 
 APIs to allow changes in `windowStateRestoreOptions` during runtime for apps that want to let users decide save/restore behaviour. 
 
