@@ -2,7 +2,7 @@
 
 - Start Date: 2024-11-26
 - RFC PR: [electron/rfcs#0012](https://github.com/electron/rfcs/pull/12)
-- Electron Issues: None <!-- [electron/electron#0000](https://github.com/electron/electron/issue/0000) -->
+- Electron Issues: None <!-- [electron/electron#0000](https://github.com/electron/electron/issues/0000) -->
 - Reference Implementation: [electron/electron#45185](https://github.com/electron/electron/pull/45185)
 - Status: **Active**
 

@@ -2,7 +2,7 @@
 
 - Start Date: (fill me in with today's date, YYYY-MM-DD)
 - RFC PR: [electron/rfcs#0000](https://github.com/electron/rfcs/pull/0000)
-- Electron Issues: [electron/electron#0000](https://github.com/electron/electron/issue/0000)
+- Electron Issues: [electron/electron#0000](https://github.com/electron/electron/issues/0000)
 - Reference Implementation: [electron/electron#0000](https://github.com/electron/electron/pull/0000)
 - Status: **Proposed**
 
