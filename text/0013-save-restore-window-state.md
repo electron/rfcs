@@ -76,8 +76,8 @@ Here's the schema I propose for the `windowStateRestoreOptions` object. This is 
   }
 ```
 > [!NOTE]
-> The entire window state (bounds, maximized, minimized, fullscreen, etc.) would be saved internally and restored using the provided `windowStateRestoreOptions` config
-> We would use the saved state and enforce the policy during restoration.
+> The entire window state (bounds, maximized, minimized, fullscreen, etc.) would be saved internally and restored using the provided `windowStateRestoreOptions` config.
+> We would use the saved state and enforce the chosen config during restoration.
 
 #### **State Persistence Mechanism**  
 
@@ -133,7 +133,6 @@ const win = new BrowserWindow({
 I also plan on adding synchronous methods to `BrowserWindow` to save, restore, clear, and get the window state or rather window preferences. Down below is the API spec for that.
 
 Here's an exhaustive list of the options that can be saved. It would provide a way to save additional properties on the window apart from the bounds itself.
-I think this feature is more of a nice to have and not a must have.
 
 >[!NOTE]
 > Restoring these properties would be set in order passed by in the options object. It would be the equivalent of calling the instance methods on BrowserWindow in the same order as provided by the developer. For example, win.setAutoHideMenuBar(true).
@@ -227,7 +226,7 @@ const win = new BrowserWindow({
   ...existingOptions, 
   windowStateRestoreOptions: {
     stateId: '#1230',
-  },
+  }
 });
 
 // Save additional properties
@@ -320,13 +319,15 @@ Example output:
 ```
 
 ### Algorithm for saving/restoring the window state
-As mentioned before, we would take a continuous approach to saving window state if the `windowStateRestoreOptions` is passed through the constructor. 
+As mentioned before, we would take a continuous approach to saving window state if the `windowStateRestoreOptions` is passed through the constructor.
+
+For the preferences it will be important to store the order of the properties as well when win.savePreferences is called due to possible conflicting properties. We can restore them in the same order and it will be as though the properties were set via JavaScript APIs in the exact same order.
 
 The algorithm would be simple two step approach:
 
 **Calculate new bounds:**
-This step invovles checking if the window is reopened on the same display by comparing the current work_area to the saved work_area, setting minimum height and width for the window (100, 100), ensuring proper fallback behaviour for when window is restored out of bounds or with overflow
-We can use this as reference implementation: [WindowSizer::AdjustBoundsToBeVisibleOnDisplay](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=350)
+This step invovles checking if the window is reopened on the same display by comparing the current work_area to the saved work_area, setting minimum height and width for the window (100, 100) if it's too less, ensuring proper fallback behaviour for when window is restored out of bounds or with overflow
+There are some tricks we can use from [WindowSizer::AdjustBoundsToBeVisibleOnDisplay](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=350)
 
 **Set window state:**
 Once we have the width, height, x, y, and displayModes we can set the window state. `displayMode` would take precedence over the saved bounds.
@@ -414,12 +415,12 @@ I thought it would be innapropriate to enforce such rules on Electron apps. Thus
 *What parts of the design do you expect to resolve through the RFC process before this gets merged?*
 - Variable names and the entire API Spec.
 - Are there any other edge cases that this proposal missed?
-- Restoring split screen for macOS
+- Restoring split screen for macOS. Should it be treated as normal or fullscreen restore? I think we can go ahead restoring as though it was fullscreened as apps need to go fullscreen to have a split view on macOS.
 
 *What parts of the design do you expect to resolve through the implementation of this feature
 before stabilization?*
 
-Not much. I would need to figure out if there are platform specific APIs that could be used for properties such as `openOnLaunchDisplay`, `openOnPrimaryDisplay`.
+Implementation should be straightforward. I was wondering if there would be any delay setting displayMode during window construction since functions such as SetFullScreen are platform dependent and async under the hood in Electron.  
 
 *What related issues do you consider out of scope for this RFC that could be addressed in the
 future independently of the solution that comes out of this RFC?*
@@ -427,7 +428,41 @@ future independently of the solution that comes out of this RFC?*
 ## Future possibilities
 
 Introduce custom behavior under `fallbackBehaviour` and `openBehaviour` parameters based on community requests.
+
+* `openBehaviour` string (optional) - Special behavior when the window is opened.
+
+  * `openOnLaunchedDisplay` - Opens the window on the display that it was launched from always.
+
+  * `openOnPrimaryDisplay` - Opens the window on the primary display always.
+
+
+* `fallbackBehaviour` string (optional) - Fallback behaviour when position is out of bounds.
+
+  * `"snapToNearestDisplayEdge"` - Snaps the window to the nearest display edge.
+
+  * `"centerOnNearestDisplay"` - Centers the window on the nearest display.
+
+  * `"centerOnPrimaryDisplay"` - Centers the window on the primary display.
+
+
+We would need an algorithm that calculates bounds based on these parameters.
+During restore we would have to respect `openBehaviour` before restoring our state.
+
+Default `fallbackBehaviour` would be `snapToNearestDisplayEdge` if out of bounds.
+This parameter would provide a declarative way to define how the window should behave if it restored out of bounds.
+
+Both of these were part of the initial GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6)
+
+The algorithm to restore window state is detailed in this [section](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6#algorithm-for-savingrestoring-the-window-state)
+
 One particular cool feature would be to provide an option to restore the window on closest available display/space dynamically.
+
+The `bounds` property could possible switched from boolean to an object that allows more configurability and control over reopening windows
+on different monitors with different dpi scaling and resolution.
+
+We could add `allowOverflow` property inside the object to control the restore overflow behaviour (some apps would specifically like to not restore in an overflown state). In our current implementation we can have something like [this](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=402).
+
+Again, everything is covered in this GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6)
 
 APIs to allow changes in `windowStateRestoreOptions` during runtime for apps that want to let users decide save/restore behaviour. 
 
