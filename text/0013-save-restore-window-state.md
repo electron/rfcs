@@ -76,7 +76,7 @@ Here's the schema I propose for the `windowStateRestoreOptions` object. This is 
   }
 ```
 > [!NOTE]
-> The entire window state (bounds, maximized, minimized, fullscreen, etc.) would be saved internally and restored using the provided `windowStateRestoreOptions` config.
+> The entire window state (bounds, maximized, fullscreen, etc.) would be saved internally and restored using the provided `windowStateRestoreOptions` config.
 > We would use the saved state and enforce the chosen config during restoration.
 
 #### **State Persistence Mechanism**  
@@ -106,7 +106,7 @@ Here's how it would land in the electron documentation.
 
   * `bounds` boolean (optional) - Whether to restore the window's x, y, height, width. Default is true.
 
-  * `displayMode` boolean (optional) - Whether to restore the window's display mode (fullscreen, kiosk, maximized, etc). Default is true.  
+  * `displayMode` boolean (optional) - Whether to restore the window's display mode (fullscreen, maximized, etc). Default is true.  
   
 
 Example usage:
@@ -291,8 +291,6 @@ Example output:
   "right": 718,
   "fullscreen": false,
   "maximized": false,
-  "minimized": false,
-  "kiosk": false,
   "work_area_bottom": 847,
   "work_area_left": 0,
   "work_area_right": 1440,
@@ -362,7 +360,7 @@ It can be used to save and restore window state with multiple configurations.
   }
 ```
 
-Here's an example that would let you restore bounds (x, y, width, height) but not the display mode (maximized, minimized, fullscreen etc)
+Here's an example that would let you restore bounds (x, y, width, height) but not the display mode (maximized, fullscreen etc)
 ```js
 const { BrowserWindow } = require('electron')
 const win = new BrowserWindow({
