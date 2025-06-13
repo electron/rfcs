@@ -250,13 +250,25 @@ const success = win.restorePreferences()
 console.log(success) // true if state was successfully restored
 ```
 
-#### `win.clearPreferences()`
+#### `win.clearState()`
 
-Clears the saved state for the window **including bounds and save policy itself**. Relevant events would be emitted.
+Clears the saved preferences for the window **including bounds**.
+Returns `boolean` - Whether the state was successfully cleared. Relevant events would be emitted.
 
 ```js
 // Clear the entire saved state for the window
-const success = win.clearPreferences()
+const success = win.clearState()
+console.log(success) // true if state was successfully cleared
+```
+
+#### `app.clearWindowState([stateId])`
+
+Additional API that does the same thing as `win.clearState()`.
+Returns `boolean` - Whether the state was successfully cleared. Relevant events would be emitted.
+
+```js
+// Clear the entire saved state for the window
+const success = app.clearWindowState('#1230')
 console.log(success) // true if state was successfully cleared
 ```
 
