@@ -272,7 +272,7 @@ const success = app.clearWindowState('#1230')
 console.log(success) // true if state was successfully cleared
 ```
 
-#### `win.getSavedState()`
+#### `app.getWindowState([stateId])`
 
 Returns `JSON Object` - The saved state for the window including bounds, display info and preferences.
 
@@ -285,6 +285,10 @@ Example output:
 ```json
 {
   "stateId": "#1230",
+  "x": 0,
+  "y": 25,
+  "height": 822,
+  "width": 718,
   "top": 25,
   "bottom": 847,
   "left": 0,
@@ -319,14 +323,41 @@ Example output:
   "hiddenInMissionControl": true, 
 }
 ```
-`windowStateRestoreOptions` Schema for reference:
-```json
-"windowStateRestoreOptions": {
-    "stateId": string, 
-    "bounds": boolean,
-    "displayMode": boolean,
-  }
+#### `app.setWindowState([stateObj])`
+
+* `stateObj` Object - Complete state object to save (replaces existing state). Must include `stateId`.
+
+Returns `boolean` - Whether the state was successfully set. Returns `false` if `stateId` is not provided in the state object or if the state was not set successfully.
+
+**Examples:**
+```js
+// Replace entire state with new object
+app.setWindowState({
+  stateId: '#1230',
+  x: 100,
+  y: 200,
+  width: 800,
+  height: 600,
+  maximized: false
+});
+
+// If you want to merge with existing state, use spread operator
+const existingState = app.getWindowState('#1230');
+app.setWindowState({
+  ...existingState,
+  x: 100,
+  y: 200
+});
+
+// This will return false and not save anything (missing stateId)
+app.setWindowState({
+  x: 100,
+  y: 200
+}); // Returns false
 ```
+
+> [!NOTE]
+> The `stateId` property must be included in the state object. If `stateId` is missing, the method returns `false` and no state is saved.
 
 ### Algorithm for saving/restoring the window state
 As mentioned before, we would take a continuous approach to saving window state if the `windowStateRestoreOptions` is passed through the constructor.
