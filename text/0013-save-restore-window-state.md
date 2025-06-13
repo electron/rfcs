@@ -123,7 +123,7 @@ const win = new BrowserWindow({
 
 ### API Design Rationale:
 - Everything is set to true by default so that the developer can set whatever they want to exclude to false. This means less lines of code as more options are added to the config.
-- Displays are considered the same if they span over the same work_area dimensions and have identical scale. So for example, replacing your primary display with same resolution and scale but different manufacturer will still be considered the same display. I think this makes sense.
+- Displays are considered the same if they span over the same work_area dimensions.
 - A window can never be restored out of reach. I am presuming no apps would want this behavior.
 - If window (width, height) reopens on a different display and does not fit on screen auto adjust to fit and resave the value. This would reduce the number of edge cases significantly and I highly doubt that any app would want to preserve an overflow when opened on a different display.
 - Not handling scaling as Windows, macOS, and Linux support multimonitor window scaling by default.
