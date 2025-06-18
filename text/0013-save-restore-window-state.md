@@ -87,11 +87,56 @@ Secondly, once the states are loaded into memory, we can use them to restore the
 
 Each time a window is **moved** or **resized**, we schedule a write using Chromium's ScopedDictPrefUpdate [[example](https://github.com/electron/electron/blob/4ad20ccb396a3354d99b8843426bece2b28228bf/shell/browser/ui/inspectable_web_contents.cc#L837-L841)].
 
-Here's a reference to all the variables we would saving internally using PrefService https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/views/chrome_views_delegate.cc;drc=1f9f3d7d4227fc2021915926b0e9f934cd610201;l=85
+Here's a reference to all the variables we would saving be internally using PrefService https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/views/chrome_views_delegate.cc;drc=1f9f3d7d4227fc2021915926b0e9f934cd610201;l=85
 
 #### Developer-Facing Events
 
-I’m also considering emitting events such as: `will-save-window-state`, `saved-window-state`, `will-restore-window-state`, `restored-window-state`. However, I’m unsure about their practical usefulness for developers and hope to finalize them through this RFC.
+I’m also considering emitting these events: `will-save-window-state`, `saved-window-state`, `restored-window-state`. **However, I’m unsure about their practical usefulness for developers and hope to finalize them through this RFC.**
+
+I'm thinking we could make these events simple telemetry events. Simple telemetry events would provide observability without the performance cost of running the custom logic for hundreds of events per second during window manipulation. Adding these events with the ability to intercept and modify values that are going to be saved, ability to intercept with custom restoration logic, would increase the implementation complexity and maintainability.
+
+With the help of APIs `app.setWindowState([stateObj])` and `app.getWindowState([stateId])` (these could be made static as well) we can modify and manipulate saved states synchronously to accomplish our goals.
+
+The following events will be emitted for window state persistence process:
+
+#### Event: 'will-save-window-state'
+
+Emitted before window state is saved. This event is triggered when the window is closed, resized, moved or when `win.savePreferences()` is called.
+
+**Parameters:**
+- `event` Event - The event object with `preventDefault()` method
+
+```js
+win.on('will-save-window-state', (event) => {
+  console.log('About to save window state');
+  
+  // Prevent the save operation if needed
+  if (someCondition) {
+    event.preventDefault();
+  }
+});
+```
+
+#### Event: 'saved-window-state'
+
+Emitted after window state has been successfully written to disk.
+
+```js
+win.on('saved-window-state', () => {
+  console.log('Window state successfully saved');
+});
+```
+
+#### Event: 'restored-window-state'
+
+Emitted immediately after the window constructor completes with the restored state applied.
+
+```js
+win.on('restored-window-state', () => {
+  console.log('Window state restored');
+});
+```
+```
 
 
 ## API Specification
