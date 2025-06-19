@@ -10,7 +10,7 @@
 
 # Save/Restore Window State API
 
-Currently, Electron does not have any built-in mechanism for saving and restoring the state of BrowserWindows, but this is a very common need for apps that want to feel more native.
+Currently, Electron does not have any built-in mechanism for saving and restoring the state of BaseWindows, but this is a very common need for apps that want to feel more native.
 
 ## Summary
 
