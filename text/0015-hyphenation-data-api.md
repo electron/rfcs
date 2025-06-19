@@ -1,7 +1,7 @@
 # RFC Template
 
 - Start Date: 2025-02-20
-- RFC PR: [electron/rfcs#0000](https://github.com/electron/rfcs/pull/0000)
+- RFC PR: [electron/rfcs#0015](https://github.com/electron/rfcs/pull/15)
 - Electron Issues: https://github.com/electron/electron/issues/33692
 - Reference Implementation: 
 - Status: **Active**
