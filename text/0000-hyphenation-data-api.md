@@ -4,7 +4,7 @@
 - RFC PR: [electron/rfcs#0000](https://github.com/electron/rfcs/pull/0000)
 - Electron Issues: https://github.com/electron/electron/issues/33692
 - Reference Implementation: 
-- Status: **Draft**
+- Status: **Active**
 
 # Hyphenation data support
 
