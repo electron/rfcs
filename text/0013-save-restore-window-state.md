@@ -95,8 +95,6 @@ I’m also considering emitting these events: `will-save-window-state`, `saved-w
 
 I'm thinking we could make these events simple telemetry events. Simple telemetry events would provide observability without the performance cost of running the custom logic for hundreds of events per second during window manipulation. Adding these events with the ability to intercept and modify values that are going to be saved, ability to intercept with custom restoration logic, would increase the implementation complexity and maintainability.
 
-With the help of APIs `app.setWindowState([stateObj])` and `app.getWindowState([stateId])` (these could be made static as well) we can modify and manipulate saved states synchronously to accomplish our goals.
-
 The following events will be emitted for window state persistence process:
 
 #### Event: 'will-save-window-state'
@@ -135,7 +133,6 @@ Emitted immediately after the window constructor completes with the restored sta
 win.on('restored-window-state', () => {
   console.log('Window state restored');
 });
-```
 ```
 
 
@@ -295,114 +292,19 @@ const success = win.restorePreferences()
 console.log(success) // true if state was successfully restored
 ```
 
-#### `win.clearState()`
+#### `BaseWindow.clearState([stateId])`
+
+Static function over BaseWindow.
 
 Clears the saved preferences for the window **including bounds**.
-Returns `boolean` - Whether the state was successfully cleared. Relevant events would be emitted.
+Returns `boolean` - Whether the state was successfully cleared. Returns true if stateId was not found.
 
 ```js
 // Clear the entire saved state for the window
-const success = win.clearState()
+const success = BaseWindow.clearState('#1230');
 console.log(success) // true if state was successfully cleared
 ```
 
-#### `app.clearWindowState([stateId])`
-
-Additional API that does the same thing as `win.clearState()`.
-Returns `boolean` - Whether the state was successfully cleared. Relevant events would be emitted.
-
-```js
-// Clear the entire saved state for the window
-const success = app.clearWindowState('#1230')
-console.log(success) // true if state was successfully cleared
-```
-
-#### `app.getWindowState([stateId])`
-
-Returns `JSON Object` - The saved state for the window including bounds, display info and preferences.
-
-```js
-// Get the saved state for the window
-const savedState = win.getSavedState()
-console.log(savedState)
-```
-Example output:
-```json
-{
-  "stateId": "#1230",
-  "x": 0,
-  "y": 25,
-  "height": 822,
-  "width": 718,
-  "top": 25,
-  "bottom": 847,
-  "left": 0,
-  "right": 718,
-  "fullscreen": false,
-  "maximized": false,
-  "work_area_bottom": 847,
-  "work_area_left": 0,
-  "work_area_right": 1440,
-  "work_area_top": 25,
-  // Only Saved BrowserWindow Preferences
-  "autoHideMenuBar": false,
-  "backgroundColor": "#FFFFFF",
-  "title": "gsoc2025",
-  "minimizable": true,
-  "maximizable": true,
-  "fullscreenable": true,
-  "resizable": true,
-  "closable": true,
-  "movable": true,
-  "excludedFromShownWindowsMenu": true,
-  "accessibleTitle": "gsoc2025",
-  "aspectRatio": 1.0,
-  "minimumSize": {
-    "width": 800,
-    "height": 600
-  },
-  "maximumSize": {
-    "width": 1000,
-    "height": 800
-  },
-  "hiddenInMissionControl": true, 
-}
-```
-#### `app.setWindowState([stateObj])`
-
-* `stateObj` Object - Complete state object to save (replaces existing state). Must include `stateId`.
-
-Returns `boolean` - Whether the state was successfully set. Returns `false` if `stateId` is not provided in the state object or if the state was not set successfully.
-
-**Examples:**
-```js
-// Replace entire state with new object
-app.setWindowState({
-  stateId: '#1230',
-  x: 100,
-  y: 200,
-  width: 800,
-  height: 600,
-  maximized: false
-});
-
-// If you want to merge with existing state, use spread operator
-const existingState = app.getWindowState('#1230');
-app.setWindowState({
-  ...existingState,
-  x: 100,
-  y: 200
-});
-
-// This will return false and not save anything (missing stateId)
-app.setWindowState({
-  x: 100,
-  y: 200
-}); // Returns false
-```
-
-> [!NOTE]
-> The `stateId` property must be included in the state object. If `stateId` is missing, the method returns `false` and no state is saved.
 
 ### Algorithm for saving/restoring the window state
 As mentioned before, we would take a continuous approach to saving window state if the `windowStateRestoreOptions` is passed through the constructor.
@@ -530,24 +432,17 @@ Introduce custom behavior under `fallbackBehaviour` and `openBehaviour` paramete
   * `"centerOnPrimaryDisplay"` - Centers the window on the primary display.
 
 
-We would need an algorithm that calculates bounds based on these parameters.
-During window restore we would have to respect `openBehaviour` before restoring our state.
+We would need an algorithm that calculates bounds based on these parameters. Many things would be needed to be taken into consideration to accomplish this.
 
-Default `fallbackBehaviour` would be `snapToNearestDisplayEdge` if out of bounds.
-This parameter would provide a declarative way to define how the window should behave if it was restored out of bounds.
+The algorithm to restore window state with the newly introduced options `fallbackBehaviour` and `openBehaviour` is detailed [here](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6#algorithm-for-savingrestoring-the-window-state). One particularly cool feature would be to provide an option to restore the window on closest available display/space dynamically.
 
-Both of these were part of the initial GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6).
+The `bounds` property that is suggested above could possibly accept an object or boolean (as suggest as of now). The object would allow more configurability and control over reopening windows on different monitors with different dpi scaling and resolution.
 
-The algorithm to restore window state is detailed in this [section](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6#algorithm-for-savingrestoring-the-window-state).
+We could add `allowOverflow` property inside the `bounds` object to control the restore overflow behaviour (some apps would specifically like to not restore in an overflown state). In our current implementation we won't be considering this and can have something like [this](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=402) for the time being.
 
-One particularly cool feature would be to provide an option to restore the window on closest available display/space dynamically.
+APIs to allow changes in `windowStateRestoreOptions` during runtime for apps that want to let users decide save/restore behaviour.
 
-The `bounds` property could possibly be switched from boolean to an object that allows more configurability and control over reopening windows on different monitors with different dpi scaling and resolution.
+APIs to allow changes to the saved window state on disk such as `BrowserWindow.getWindowState([stateId])` and `BrowserWindow.setWindowState([stateObj])` might be useful for cloud synchronization of window states as suggested by this comment https://github.com/electron/rfcs/pull/16#issuecomment-2983249038
 
-We could add `allowOverflow` property inside the object to control the restore overflow behaviour (some apps would specifically like to not restore in an overflown state). In our current implementation we can have something like [this](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=402).
-
-Again, everything is covered in this GSoC [proposal](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6).
-
-APIs to allow changes in `windowStateRestoreOptions` during runtime for apps that want to let users decide save/restore behaviour. 
 
 Overall, the `windowStateRestoreOptions` is very configurable so I think it's future-proof. More configurations can be added based on community requests.
