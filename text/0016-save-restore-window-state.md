@@ -2,7 +2,7 @@
 - Start Date: 2025-03-20
 - RFC PR: 
 - Electron Issues: Related to [electron/electron/issues/526](https://github.com/electron/electron/issues/526)
-- Reference Implementation: 
+- Reference Implementation: https://github.com/electron/electron/pull/47425/files
 - Status: **Proposed**
 
 # Save/Restore Window State API
@@ -326,11 +326,16 @@ Once we have the width, height, x, y, and displayModes we can set the window sta
 *Explain the feature as if it were already implemented in Electron and you were teaching it to
 an Electron app developer.*
 
-Electron is introducing `windowStatePersistence`, an optional object in the `BaseWindowConstructorOptions` and would also be available in `BrowserWindowConstructorOptions`.
+Electron is introducing `windowStatePersistence`, an optional object/boolean in the `BaseWindowConstructorOptions` and would also be available in `BrowserWindowConstructorOptions`.
 It can be used to save and restore window state with multiple configurations.
 
-`windowStatePersistence` schema - Everything is optional. `name` property would be required. Developers can choose what they want to preserve and how they want to restore it.
+`windowStatePersistence` schema - Everything is optional. Developers can choose what they want to preserve and how they want to restore it or simply set it to true. The default behaviour in this case would be `bounds` and `displayMode` both are restored.
 
+```json
+"name": string,
+"windowStatePersistence": true
+```
+OR
 ```json
 "name": string, 
 "windowStatePersistence": {
@@ -403,14 +408,6 @@ I thought it would be inappropriate to enforce such rules on Electron apps. Thus
 *What parts of the design do you expect to resolve through the RFC process before this gets merged?*
 - Variable names and the entire API Spec.
 
-*What parts of the design do you expect to resolve through the implementation of this feature
-before stabilization?*
-
-*What related issues do you consider out of scope for this RFC that could be addressed in the
-future independently of the solution that comes out of this RFC?*
-
-Overall, the `windowStatePersistence` is very configurable so I think it's future-proof. More configurations can be added based on community requests.
-
 ## Future possibilities
 
 Introduce custom behavior under `fallbackBehaviour` and `openBehaviour` parameters based on community requests.
@@ -442,3 +439,5 @@ We could add `allowOverflow` property inside the `bounds` object to control the 
 APIs to allow changes in `windowStatePersistence` during runtime for apps that want to let users decide save/restore behaviour.
 
 APIs to allow changes to the saved window state on disk such as `BrowserWindow.getWindowState([name])` and `BrowserWindow.setWindowState([stateObj])` might be useful for cloud synchronization of window states as suggested by this comment https://github.com/electron/rfcs/pull/16#issuecomment-2983249038
+
+Overall, the `windowStatePersistence` is very configurable so I think it's future-proof. More configurations can be added based on community requests.
