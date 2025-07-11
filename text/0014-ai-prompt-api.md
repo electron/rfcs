@@ -23,9 +23,9 @@ also support these features.
 ## Guide-level explanation
 
 The Prompt API can be used by Electron app developers by defining a local AI handler
-script via `Session.registerLocalAIHandlerScript` and a new module `localAIHandler`.
-The handler script will run in a [utilityProcess](https://www.electronjs.org/docs/latest/api/utility-process)
-and will allow app developers to proxy Built-in API calls to a local LLM implementation of
+[utilityProcess](https://www.electronjs.org/docs/latest/api/utility-process) via
+`Session.registerLocalAIHandler` and a new module `localAIHandler`. The utilityProcess
+will allow app developers to proxy Built-in API calls to a local LLM implementation of
 their choice.
 
 For the initial implementation, the local AI handler will only support the prompt API,
@@ -33,35 +33,21 @@ but the long term intention is that this handler would also support other Built-
 
 ### Session
 
-`ses.registerLocalAIHandlerScript(options)`
-* `options` Object
-  * `filePath` string - Path of the script file. Must be an absolute path.
-
-Returns `string` - The ID of the registered local AI handler script.
+`ses.registerLocalAIHandler(handler)`
+* `handler` [`UtilityProcess`](utility-process.md#class-utilityprocess)
+  
+Returns `string` - The ID of the registered local AI handler.
 
 `ses.unregisterLocalAIHandlerScript(id)`
 
-* `id` string - local AI handler script ID
+* `id` string - local AI handler ID
 
-Unregisters the specified local AI handler script and terminates the associated
-utility process if it is running.
+Unregisters the specified local AI handler utilityProcess.
 
-`ses.getUtilityProcessForLocalAI(id)`
+_NOTE: The app developer will be responsible for managing the lifetime of
+the utilityProcess; this method merely handles disassociation of the
+utilityProcess as an AI handler.
 
-* `id` string - local AI handler script ID
-
-Returns [`UtilityProcess`](utility-process.md#class-utilityprocess) | null - if the specified
-local AI handler script has an associated utility process running it will be returned; 
-otherwise it returns null.
-
-#### Event: 'local-ai-utility-started'
-
-Returns:
-
-* `event` Event
-* `id` string - local AI handler script ID
-
-Emitted when a utility process is started for the specified local AI handler script.
 
 ### localAIHandler
 
@@ -77,22 +63,25 @@ This module is intended to be used by a script registered to a session via
 The `localAIHandler` module has the following methods:
 
 ##### `localAIHandler.setPromptAPIHandler(handler)`
-* `handler` Function\<[LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)\> | null
-  * `webContentsId` (Integer | null) - The unique id of the [WebContents](web-contents.md)
-  calling the Prompt API. The webContents id may be null if the Prompt API is called from
-  a service worker or shared worker.
-  * `securityOrigin` String - Origin of the page calling the Prompt API.
+* `handler` Function\<Promise\<[LanguageModel](https://github.com/webmachinelearning/prompt-api?tab=readme-ov-file#full-api-surface-in-web-idl)\>\> | null
+  * `details` Object  
+    * `webContentsId` (Integer | null) - The unique id of the [WebContents](web-contents.md)
+    calling the Prompt API. The webContents id may be null if the Prompt API is called from
+    a service worker or shared worker.
+    * `securityOrigin` String - Origin of the page calling the Prompt API.
+
+_NOTE: [BindAIManager](https://source.chromium.org/chromium/chromium/src/+/main:content/public/browser/content_browser_client.h;l=3162) gets a `BrowserContext`, `base::SupportsUserData`, `content::RenderFrameHost`, so we could use that to pass additional details to the
+handler if so desired.
 
 > Main process
 
 ```js
-const { session } = require('electron');
+const { session, utilityProcess } = require('electron');
+
 
 app.whenReady().then(() => {
-  session.defaultSession.registerLocalAIHandlerScript({
-    filePath: 'PATH TO HANDLER SCRIPT'
-  })
-})
+  const aiHandlerProcess = utilityProcess.fork('PATH TO HANDLER SCRIPT');
+  session.defaultSession.registerLocalAIHandlerScript(aiHandlerProcess);
 ```
 
 > Utility script
@@ -101,11 +90,16 @@ app.whenReady().then(() => {
 const { localAIHandler } = require('electron/utility');
 
 class ElectronAI {
-  #webContentsId;
+  #details;
   #languageModel;
 
-  constructor(webContents) {
-    this.#webContentsId = webContents.id;
+  constructor(details) {
+    this.#details = details;
+  }
+
+  static async createInstance(details){
+    // Do option async work
+    return new ElectronAI(details);
   }
 
   async createInternal(options) {
@@ -139,7 +133,11 @@ class ElectronAI {
   }
 }
 
-localAIHandler.setPromptAPIHandler((webContentsId, securityOrigin) => new ElectronAI(webContents, securityOrigin));
+async function createElectronAI(details) {
+  return ElectronAI.createInstance(details);
+}
+
+localAIHandler.setPromptAPIHandler(createElectronAI);
 ```
 
 ## Reference-level explanation
@@ -168,7 +166,7 @@ Additionally, [node-llama-cpp](https://github.com/withcatai/node-llama-cpp/blob/
 
 ## Unresolved questions
 
-- Are there parameters that should be passed to the handler?  [BindAIManager](https://source.chromium.org/chromium/chromium/src/+/main:content/public/browser/content_browser_client.h;l=3151) gets a `BrowserContext` and `base::SupportsUserData`, so I'm not sure what else we could pass along.
+- Are there parameters that should be passed to the handler?  [BindAIManager](https://source.chromium.org/chromium/chromium/src/+/main:content/public/browser/content_browser_client.h;l=3162) gets a `BrowserContext`, `base::SupportsUserData`, `content::RenderFrameHost`.
 
 ## Future possibilities
 
