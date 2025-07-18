@@ -38,7 +38,7 @@ but the long term intention is that this handler would also support other Built-
   
 Returns `string` - The ID of the registered local AI handler.
 
-`ses.unregisterLocalAIHandlerScript(id)`
+`ses.unregisterLocalAIHandler(id)`
 
 * `id` string - local AI handler ID
 
