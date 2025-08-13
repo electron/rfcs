@@ -18,13 +18,13 @@ While `Offscreen Rendering` allows developers to export a shared texture for emb
 
 ## API Design
 
-### sharedTexture
+### Module
 
 A new `sharedTexture` module will be added, available in both the sandboxed renderer process and the main process. This module provides the primary interface for importing external shared texture handles. The module handles lifetime management automatically, while still provide subtle API for advanced users. 
 
-#### Methods
+### Methods
 
-##### `sharedTexture.importSharedTexture(options)` _Experimental_
+#### `sharedTexture.importSharedTexture(options)` _Experimental_
 
 > This method is only available in the main process.
 
@@ -36,7 +36,7 @@ Imports the shared texture from the given options. A copy of the native texture 
 
 Returns `SharedTextureImported` - The imported shared texture.
 
-##### `sharedTexture.sendToRenderer(webContents, imported, ...args)` _Experimental_
+#### `sharedTexture.sendToRenderer(webContents, imported, ...args)` _Experimental_
 
 > This method is only available in the main process.
 
@@ -48,7 +48,7 @@ Send the imported shared texture to a renderer process. You must register receiv
 
 Returns `Promise<void>` - Resolves when the transfer is complete.
 
-##### `sharedTexture.receiveFromMain(receiver)` _Experimental_
+#### `sharedTexture.receiveFromMain(receiver)` _Experimental_
 
 > This method is only available in the renderer process.
 
@@ -64,7 +64,9 @@ Set a callback in renderer process to receive imported shared textures from the 
 
 Provides subtle APIs to interact with imported shared texture for advanced users.
 
-### SharedTextureImportTextureInfo Object
+### Structures
+
+#### SharedTextureImportTextureInfo Object
 
 * `pixelFormat` string - The pixel format of the texture. Can be `rgba` or `bgra`.
 * `colorSpace` [ColorSpace](https://github.com/electron/electron/blob/main/docs/api/structures/color-space.md) (optional) - The color space of the texture.
@@ -73,25 +75,25 @@ Provides subtle APIs to interact with imported shared texture for advanced users
 * `timestamp` number (optional) - A timestamp in microseconds that will be reflected to `VideoFrame`.
 * `handle` [SharedTextureHandle](#sharedtexturehandle-object) - The shared texture handle.
 
-### SharedTextureImported Object
+#### SharedTextureImported Object
 
 * `textureId` string - The unique identifier of this shared texture imported.
 * `getVideoFrame` Function\<[VideoFrame](https://developer.mozilla.org/en-US/docs/Web/API/VideoFrame)\> - Create a `VideoFrame` that use the imported shared texture at current process. You can call `VideoFrame.close()` once you've finished using, the underlying resources will wait for GPU finish internally.
 * `release` Function - Release this object's reference of this shared texture imported. The underlying resource will be alive until every reference released.
 * `subtle` [SharedTextureImportedSubtle](#sharedtextureimportedsubtle-object) - Provides subtle APIs to interact with imported shared texture for advanced users.
 
-### SharedTextureSubtle Object
+#### SharedTextureSubtle Object
 
 * `importSharedTexture` Function\<[SharedTextureImportedSubtle](#sharedtextureimportedsubtle-object)\> - Imports the shared texture from the given options. Returns the imported shared texture.
   * `textureInfo` [SharedTextureImportTextureInfo](#sharedtextureimporttextureinfo-object) - The information of shared texture to import.
 * `finishTransferSharedTexture` Function\<[SharedTextureImportedSubtle](#sharedtextureimportedsubtle-object)\> - Finishes the transfer of the shared texture and get the transferred shared texture. Returns the imported shared texture from the transfer object.
   * `transfer` [SharedTextureTransfer](#sharedtexturetransfer-object) - The transfer object of the shared texture.
 
-### SharedTextureSyncToken Object
+#### SharedTextureSyncToken Object
 
 * `syncToken` string - The opaque data for sync token.
 
-### SharedTextureTransfer Object
+#### SharedTextureTransfer Object
 
 * `transfer` string - The opaque transfer data of the shared texture, can be transferred across Electron processes.
 * `syncToken` string - The opaque sync token data for frame creation.
@@ -102,7 +104,7 @@ Provides subtle APIs to interact with imported shared texture for advanced users
 
 Do not modify any property, and use `sharedTexture.subtle.finishTransferSharedTexture` to get [`SharedTextureImported`](#sharedtextureimported-object) back.
 
-### SharedTextureImportedSubtle Object
+#### SharedTextureImportedSubtle Object
 
 * `getVideoFrame` Function\<[VideoFrame](https://developer.mozilla.org/en-US/docs/Web/API/VideoFrame)\> - Create a `VideoFrame` that use the imported shared texture at current process. You can call `VideoFrame.close()` once you've finished using, the underlying resources will wait for GPU finish internally.
 * `release` Function - Release the resources. If you transferred and get multiple `SharedTextureImported`, you have to `release` it on every one of them. The resource on GPU process will be finally destroyed when last one is released.
@@ -112,7 +114,7 @@ Do not modify any property, and use `sharedTexture.subtle.finishTransferSharedTe
 * `setReleaseSyncToken` Function - This method is for advanced users. If used, this object's underlying resource will not be released until the set sync token is fulfilled at gpu process. By using sync tokens, users are not required to use release callbacks for lifetime management.
   * `syncToken` [SharedTextureSyncToken](#sharedtexturesynctoken-object) - The sync token to set.
 
-### SharedTextureHandle Object
+#### SharedTextureHandle Object
 
 * `ntHandle` Buffer (optional) _Windows_ - NT HANDLE holds the shared texture. Note that this NT HANDLE is local to current process.
 * `ioSurface` Buffer (optional) _macOS_ - IOSurfaceRef holds the shared texture. Note that this IOSurface is local to current process (not global).
@@ -124,7 +126,6 @@ Do not modify any property, and use `sharedTexture.subtle.finishTransferSharedTe
     * `fd` number - File descriptor for the underlying memory object (usually dmabuf).
   * `modifier` string _Linux_ - The modifier is retrieved from GBM library and passed to EGL driver.
   * `supportsZeroCopyWebGpuImport` boolean _Linux_ - Indicates whether supports zero copy import to WebGPU.
-
 
 ## Guide-level explanation
 
