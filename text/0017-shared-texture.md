@@ -214,6 +214,10 @@ contextBridge.exposeInMainWorld('textures', {
 
 5. In `renderer.js`, prepare a canvas and a WebGPU rendering pipeline.
 
+<details>
+
+<summary> WebGPU Rendering Pipeline Initialization Code </summary>
+
 ```js
 // Import WebGPU utilities
 const canvas = document.createElement('canvas');
@@ -346,6 +350,8 @@ initWebGpu().catch((err) => {
   console.error('Failed to initialize WebGPU:', err);
 });
 ```
+
+</details>
 
 6. Obtain a `VideoFrame` from the imported shared texture and render it. After submitting the WebGPU command buffer, you can call `close` on the `VideoFrame`.
 
