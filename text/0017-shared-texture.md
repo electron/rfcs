@@ -20,7 +20,7 @@ While `Offscreen Rendering` allows developers to export a shared texture for emb
 
 ### sharedTexture
 
-A new `sharedTexture` module will be added, available in both the sandboxed renderer process and the main process. This module provides the primary interface for importing external shared texture handles. The module handles lifetime management automatically, while still provides subtle API for advanced users. 
+A new `sharedTexture` module will be added, available in both the sandboxed renderer process and the main process. This module provides the primary interface for importing external shared texture handles. The module handles lifetime management automatically, while still provide subtle API for advanced users. 
 
 #### Methods
 
@@ -97,7 +97,7 @@ Provides subtle APIs to interact with imported shared texture for advanced users
 * `syncToken` string - The opaque sync token data for frame creation.
 * `pixelFormat` string - The pixel format of the texture. Can be `rgba` or `bgra`.
 * `codedSize` [Size](https://github.com/electron/electron/blob/main/docs/api/structures/size.md) - The full dimensions of the shared texture.
-* `visibleRect` [Rectangle](https://github.com/electron/electron/blob/main/docs/api/structures/rectangle.md) - A subsection of [0, 0, codedSize.width(), codedSize.height()]. In common cases, it is the full section area.
+* `visibleRect` [Rectangle](https://github.com/electron/electron/blob/main/docs/api/structures/rectangle.md) - A subsection of [0, 0, codedSize.width, codedSize.height]. In common cases, it is the full section area.
 * `timestamp` number - A timestamp in microseconds that will be reflected to `VideoFrame`.
 
 Do not modify any property, and use `sharedTexture.subtle.finishTransferSharedTexture` to get [`SharedTextureImported`](#sharedtextureimported-object) back.
@@ -206,7 +206,7 @@ contextBridge.exposeInMainWorld('textures', {
     sharedTexture.receiveFromMain(async (imported, id) => {
       // Provide the imported shared texture to the renderer process
       await cb(imported);
-    }),
+    });
   }
 });
 ```
@@ -370,7 +370,7 @@ window.textures.onSharedTexture(async (imported) => {
 });
 ```
 
-This managed API will automatically handles IPC and reference counting for users. When all holders in different processes called `release()`, the resource will be automatically released. However, if advanced user wants to access raw APIs, they can use `subtle` property to access them. For more details, please take [the test](https://github.com/electron/electron/blob/main/spec/api-shared-texture-spec.ts) as an example.
+This managed API will automatically handle IPC and reference counting for users. When all holders in different processes called `release()`, the resource will be automatically released. However, if advanced user wants to access raw APIs, they can use `subtle` property to access them. For more details, please take [the test](https://github.com/electron/electron/blob/main/spec/api-shared-texture-spec.ts) as an example.
 
 ## Reference-level explanation
 
@@ -481,4 +481,4 @@ Previously, users could import external images via video streams or bitmaps, whi
 
 - Performance: It would be meaningful to profile the overhead of managing the lifecycle through Electron IPC callbacks.
 - OSR: Since we can import a shared texture as a `SharedImage`, it may be possible to implement OSR using `SharedImage` instead of `FrameSinkVideoCapturer`.
-- Provides a utility method to let user import global `IOSurface` or global D3D11 `HANDLE`.
+- Provide a utility method to let user import global `IOSurface` or global D3D11 `HANDLE`.
