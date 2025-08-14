@@ -227,10 +227,12 @@ The path to upgrade for apps would be for developers to remove their existing im
 Covered in the [Implementation Details](#implementation-details) section.
 
 ## Drawbacks
+
 - Writing to disk everytime the window is moved or resized in a batched 10 second window might not be necessary and better to write to disk only on window close synchronously.
 - Similar outcomes could be achieved via JavaScript APIs with miniscule performance difference. The only issue being the window state is not set at the right time in the window lifecycle.
 
 Why should we *not* do this?
+
 - It's not a critical issue.
 - Adds maintenance burden for the Electron team to support this feature long-term.
 
@@ -262,11 +264,13 @@ I thought it would be inappropriate to enforce such rules on Electron apps. Thus
 
 ## Unresolved questions
 *What parts of the design do you expect to resolve through the RFC process before this gets merged?*
-- Variable names and the entire API Spec.
+- Should we switch from `name` to something more descriptive? Should we use the existing unique identifier `id` and allow developers to pass a unique `id`?
+- Static event for `will-restore-window-state`? Since restoration happens during window construction, should we add `BaseWindow.on('will-restore-window-state', ...)` as a static event to allow `e.preventDefault()` call before the JS window object exists? Without a static event it won't be possible to listen to this event meaningfully.
+- Save events: Is it worth adding `will-save-window-state` and `saved-window-state`? Chromium's PrefService doesn't emit events, so this might be tricky to implement cleanly.
 
 ## Future possibilities
 
-Introduce custom behavior under `fallbackBehaviour` and `openBehaviour` parameters based on community requests.
+1) Introduce custom behavior under `fallbackBehaviour` and `openBehaviour` parameters based on community requests.
 
 * `openBehaviour` string (optional) - Special behavior when the window is opened.
 
@@ -288,15 +292,15 @@ We would need an algorithm that calculates bounds based on these parameters. Man
 
 The algorithm to restore window state with the newly introduced options `fallbackBehaviour` and `openBehaviour` is detailed [here](https://gist.github.com/nilayarya/48d24e38d8dbf67dd05eef9310f147c6#algorithm-for-savingrestoring-the-window-state). One particularly cool feature would be to provide an option to restore the window on closest available display/space dynamically.
 
-The `bounds` property that is suggested above could possibly accept an object or boolean (as suggest as of now). The object would allow more configurability and control over reopening windows on different monitors with different dpi scaling and resolution.
+2) The `bounds` property that is suggested above could possibly accept an object or boolean (boolean in current proposal). The object would allow more configurability and control over reopening windows on different monitors with different dpi scaling and resolution.
 
-We could add `allowOverflow` property inside the `bounds` object to control the restore overflow behaviour (some apps would specifically like to not restore in an overflown state). In our current implementation we won't be considering this and can have something like [this](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=402) for the time being.
+3) We could add `allowOverflow` property inside the `bounds` object to control the restore overflow behaviour (some apps would specifically like to not restore in an overflown state). In our current implementation we won't be considering this and can have something like [this](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=402) for the time being.
 
-APIs to allow changes in `windowStatePersistence` during runtime for apps that want to let users of the application decide save/restore behaviour.
+4) APIs to allow changes in `windowStatePersistence` during runtime for apps that want to let users of the application decide save/restore behaviour.
 
-APIs to allow changes to the saved window state on disk such as `BrowserWindow.getWindowState([name])` and `BrowserWindow.setWindowState([stateObj])` might be useful for cloud synchronization of window states as suggested by this comment https://github.com/electron/rfcs/pull/16#issuecomment-2983249038
+5) APIs to allow changes to the saved window state on disk such as `BrowserWindow.getWindowState([name])` and `BrowserWindow.setWindowState([stateObj])` might be useful for cloud synchronization of window states as suggested by this comment https://github.com/electron/rfcs/pull/16#issuecomment-2983249038
 
-Additional synchronous API methods to `BaseWindow` to save, restore, and get the window state or rather window preferences. Down below is the API spec for that.
+6) Additional synchronous API methods to `BaseWindow` to save, restore, and get the window state or rather window preferences. Down below is the API spec for that.
 
 Here's an exhaustive list of the options that can be saved. It would provide a way to save additional properties on the window apart from the bounds itself.
 
