@@ -302,121 +302,119 @@ I thought it would be inappropriate to enforce such rules on Electron apps. Thus
 
 6) Additional synchronous API methods to `BaseWindow` to save, restore, and get the window state or rather window preferences. Down below is the API spec for that.
 
-    Here's an exhaustive list of the options that can be saved. It would provide a way to save additional properties on the window apart from the bounds itself.
-
 > [!NOTE]
 > Restoring these properties would be set in order passed by in the options object. It would be the equivalent of calling the instance methods on BrowserWindow in the same order as provided by the developer. For example, win.setAutoHideMenuBar(true).
 
-    #### `win.savePreferences([options])`
+#### `win.savePreferences([options])`
 
-    * `options` Object
-      
-      * `autoHideMenuBar` boolean (optional) - Save window's current autoHideMenuBar state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>Linux</kbd></span>
-      
-      * `focusable` boolean (optional) - Save window's current focusable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+* `options` Object
+  
+  * `autoHideMenuBar` boolean (optional) - Save window's current autoHideMenuBar state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>Linux</kbd></span>
+  
+  * `focusable` boolean (optional) - Save window's current focusable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `visibleOnAllWorkspaces` boolean (optional) - Save window's current visibleOnAllWorkspaces state. Default: `false`<span>&nbsp;&nbsp;  <kbd>macOS</kbd></span>
+  * `visibleOnAllWorkspaces` boolean (optional) - Save window's current visibleOnAllWorkspaces state. Default: `false`<span>&nbsp;&nbsp;  <kbd>macOS</kbd></span>
 
-      * `shadow` boolean (optional) - Save window's current shadow state. Default: `false`
+  * `shadow` boolean (optional) - Save window's current shadow state. Default: `false`
 
-      * `menuBarVisible` boolean (optional) - Save window's current menuBarVisible state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>Linux</kbd></span>
+  * `menuBarVisible` boolean (optional) - Save window's current menuBarVisible state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>Linux</kbd></span>
 
-      * `representedFilename` boolean (optional) - Save window's current representedFilename. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
+  * `representedFilename` boolean (optional) - Save window's current representedFilename. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
 
-      * `title` boolean (optional) - Save window's current title. Default: `false`
+  * `title` boolean (optional) - Save window's current title. Default: `false`
 
-      * `minimizable` boolean (optional) - Save window's current minimizable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+  * `minimizable` boolean (optional) - Save window's current minimizable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `maximizable` boolean (optional) - Save window's current maximizable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+  * `maximizable` boolean (optional) - Save window's current maximizable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `fullscreenable` boolean (optional) - Save window's current fullscreenable state. Default: `false`
+  * `fullscreenable` boolean (optional) - Save window's current fullscreenable state. Default: `false`
 
-      * `resizable` boolean (optional) - Save window's current resizable state. Default: `false`
+  * `resizable` boolean (optional) - Save window's current resizable state. Default: `false`
 
-      * `closable` boolean (optional) - Save window's current closable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+  * `closable` boolean (optional) - Save window's current closable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `movable` boolean (optional) - Save window's current movable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+  * `movable` boolean (optional) - Save window's current movable state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `excludedFromShownWindowsMenu` boolean (optional) - Save window's current excludedFromShownWindowsMenu state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
+  * `excludedFromShownWindowsMenu` boolean (optional) - Save window's current excludedFromShownWindowsMenu state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
 
-      * `accessibleTitle` boolean (optional) - Save window's current accessibleTitle. Default: `false`
+  * `accessibleTitle` boolean (optional) - Save window's current accessibleTitle. Default: `false`
 
-      * `backgroundColor` boolean (optional) - Save window's current backgroundColor. Default: `false`
+  * `backgroundColor` boolean (optional) - Save window's current backgroundColor. Default: `false`
 
-      * `aspectRatio` boolean (optional) - Save window's current aspectRatio. Default: `false`
+  * `aspectRatio` boolean (optional) - Save window's current aspectRatio. Default: `false`
 
-      * `minimumSize` boolean (optional) - Save window's current minimumSize (width, height). Default: `false`
+  * `minimumSize` boolean (optional) - Save window's current minimumSize (width, height). Default: `false`
 
-      * `maximumSize` boolean (optional) - Save window's current maximumSize (width, height). Default: `false`
+  * `maximumSize` boolean (optional) - Save window's current maximumSize (width, height). Default: `false`
 
-      * `hiddenInMissionControl` boolean (optional) - Save window's current hiddenInMissionControl state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
+  * `hiddenInMissionControl` boolean (optional) - Save window's current hiddenInMissionControl state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
 
-      * `alwaysOnTop` boolean (optional) - Save window's current alwaysOnTop state. Default: `false`
+  * `alwaysOnTop` boolean (optional) - Save window's current alwaysOnTop state. Default: `false`
 
-      * `skipTaskbar` boolean (optional) - Save window's current skipTaskbar state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+  * `skipTaskbar` boolean (optional) - Save window's current skipTaskbar state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `opacity` boolean (optional) - Save window's current opacity. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+  * `opacity` boolean (optional) - Save window's current opacity. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `windowButtonVisibility` boolean (optional) - Save window's current windowButtonVisibility state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
+  * `windowButtonVisibility` boolean (optional) - Save window's current windowButtonVisibility state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
 
-      * `ignoreMouseEvents` boolean (optional) - Save window's current ignoreMouseEvents state. Default: `false`
+  * `ignoreMouseEvents` boolean (optional) - Save window's current ignoreMouseEvents state. Default: `false`
 
-      * `contentProtection` boolean (optional) - Save window's current contentProtection state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
+  * `contentProtection` boolean (optional) - Save window's current contentProtection state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>macOS</kbd></span>
 
-      * `autoHideCursor` boolean (optional) - Save window's current autoHideCursor state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
+  * `autoHideCursor` boolean (optional) - Save window's current autoHideCursor state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
 
-      * `vibrancy` boolean (optional) - Save window's current vibrancy state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
+  * `vibrancy` boolean (optional) - Save window's current vibrancy state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
 
-      * `backgroundMaterial` boolean (optional) - Save window's current backgroundMaterial state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd></span>
+  * `backgroundMaterial` boolean (optional) - Save window's current backgroundMaterial state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd></span>
 
-      * `windowButtonPosition` boolean (optional) - Save window's current windowButtonPosition state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
+  * `windowButtonPosition` boolean (optional) - Save window's current windowButtonPosition state. Default: `false`<span>&nbsp;&nbsp; <kbd>macOS</kbd></span>
 
-      * `titleBarOverlay` boolean (optional) - Save window's current titleBarOverlay state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>Linux</kbd></span>
+  * `titleBarOverlay` boolean (optional) - Save window's current titleBarOverlay state. Default: `false`<span>&nbsp;&nbsp; <kbd>Windows</kbd> <kbd>Linux</kbd></span>
 
-      * `zoomLevel` boolean (optional) - Save window webcontent's current zoomLevel. Default: `false`
+  * `zoomLevel` boolean (optional) - Save window webcontent's current zoomLevel. Default: `false`
 
-      * `audioMuted` boolean (optional) - Save window webcontent's current audioMuted state. Default: `false`
+  * `audioMuted` boolean (optional) - Save window webcontent's current audioMuted state. Default: `false`
 
-      * `isDevToolsOpened` boolean (optional) - Save window webcontent's current isDevToolsOpened state. Default: `false`
+  * `isDevToolsOpened` boolean (optional) - Save window webcontent's current isDevToolsOpened state. Default: `false`
 
-      * `devToolsTitle` boolean (optional) - Save window webcontent's current devToolsTitle. Default: `false`
+  * `devToolsTitle` boolean (optional) - Save window webcontent's current devToolsTitle. Default: `false`
 
-      * `ignoreMenuShortcuts` boolean (optional) - Save window webcontent's current ignoreMenuShortcuts state. Default: `false`
+  * `ignoreMenuShortcuts` boolean (optional) - Save window webcontent's current ignoreMenuShortcuts state. Default: `false`
 
-      * `frameRate` boolean (optional) - Save window webcontent's current frameRate. Default: `false`
+  * `frameRate` boolean (optional) - Save window webcontent's current frameRate. Default: `false`
 
-      * `backgroundThrottling` boolean (optional) - Save window webcontent's current backgroundThrottling state. Default: `false`
-      
+  * `backgroundThrottling` boolean (optional) - Save window webcontent's current backgroundThrottling state. Default: `false`
+  
 
-    Returns `boolean` - Whether the state was successfully saved. Relevant events would be emitted.
+Returns `boolean` - Whether the state was successfully saved. Relevant events would be emitted.
 
-    ```js
-    const { BrowserWindow } = require('electron')
-    const win = new BrowserWindow({
-      ...existingOptions,
-      name: '#1230',
-      windowStatePersistence: true
-    });
+```js
+const { BrowserWindow } = require('electron')
+const win = new BrowserWindow({
+  ...existingOptions,
+  name: '#1230',
+  windowStatePersistence: true
+});
 
-    // Save additional properties
-    win.savePreferences({ 
-      autoHideMenuBar: true,
-      focusable: true,
-      visibleOnAllWorkspaces: true,
-      shadow: true,
-      menuBarVisible: true,
-      representedFilename: true,
-    });
-    ```
+// Save additional properties
+win.savePreferences({ 
+  autoHideMenuBar: true,
+  focusable: true,
+  visibleOnAllWorkspaces: true,
+  shadow: true,
+  menuBarVisible: true,
+  representedFilename: true,
+});
+```
 
-    #### `win.restorePreferences()`
+#### `win.restorePreferences()`
 
-    Returns `boolean` - Whether the preferences were successfully restored and applied to the window. Relevant events would be emitted.
-    Preferences will be restored in the order of the options object passed during savePreferences.
-    ```js
-    // Restore the previously saved preferences
-    const success = win.restorePreferences()
-    console.log(success) // true if state was successfully restored
-    ```
+Returns `boolean` - Whether the preferences were successfully restored and applied to the window. Relevant events would be emitted.
+Preferences will be restored in the order of the options object passed during savePreferences.
+```js
+// Restore the previously saved preferences
+const success = win.restorePreferences()
+console.log(success) // true if state was successfully restored
+```
 
 Overall, the `windowStatePersistence` is very configurable so I think it's future-proof. More configurations can be added based on community requests.
