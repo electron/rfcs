@@ -304,8 +304,8 @@ I thought it would be inappropriate to enforce such rules on Electron apps. Thus
 
     Here's an exhaustive list of the options that can be saved. It would provide a way to save additional properties on the window apart from the bounds itself.
 
-    >[!NOTE]
-    > Restoring these properties would be set in order passed by in the options object. It would be the equivalent of calling the instance methods on BrowserWindow in the same order as provided by the developer. For example, win.setAutoHideMenuBar(true).
+> [!NOTE]
+> Restoring these properties would be set in order passed by in the options object. It would be the equivalent of calling the instance methods on BrowserWindow in the same order as provided by the developer. For example, win.setAutoHideMenuBar(true).
 
     #### `win.savePreferences([options])`
 
