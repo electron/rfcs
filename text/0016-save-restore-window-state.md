@@ -123,7 +123,7 @@ Here's how it would land in the electron documentation.
 
 ### BaseWindowConstructorOptions
 
-* `name` string (optional) - A unique identifier for the window that enables features such as state persistence.
+* `name` string (optional) - A unique identifier for the window, used internally by Electron to enable features such as state persistence. Each window must have a distinct name. It can only be reused after the corresponding window has been destroyed. An error is thrown if the name is already in use. This is not the visible title shown to users on the title bar.
 
 * `windowStatePersistence` ([WindowStatePersistence] | Boolean) (optional) - Configures or enables the persistence of window state (position, size, maximized state, etc.) across application restarts. Has no effect if window `name` is not provided. _Experimental_
 
@@ -154,18 +154,15 @@ const win = new BrowserWindow({
 
 ### Additional APIs
 
-#### `BaseWindow.clearState([name])`
+#### `BaseWindow.clearWindowState(name)`
 
 Static function over BaseWindow.
 
-Clears the saved preferences for the window **including bounds**.
-Returns `boolean` - Whether the state was successfully cleared. Returns true even if the name was not found.
+* `name` string - The window `name` to clear state for (see [BaseWindowConstructorOptions](structures/base-window-options.md)).
 
-```js
-// Clear the entire saved state for the window
-const success = BaseWindow.clearState('#1230');
-console.log(success) // true if state was successfully cleared
-```
+Clears the saved state for a window with the given name. This removes all persisted window bounds, display mode, and work area information that was previously saved when `windowStatePersistence` was enabled.
+
+If the window `name` is empty or the window state doesn't exist, the method will log a warning.
 
 ### Algorithm for saving/restoring the window state
 As mentioned before, we would take a continuous approach to saving window state if `name` and `windowStatePersistence` are passed through the constructor.
