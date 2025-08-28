@@ -1,7 +1,7 @@
 # RFC 
 - Start Date: 2025-03-20
-- RFC PR: 
-- Electron Issues: Related to [electron/electron/issues/526](https://github.com/electron/electron/issues/526)
+- RFC PR: [electron/rfcs#16](https://github.com/electron/rfcs/pull/16)
+- Electron Issues: [electron/electron#526](https://github.com/electron/electron/issues/526)
 - Reference Implementation: https://github.com/electron/electron/tree/gsoc-2025
 - Status: **Proposed**
 
