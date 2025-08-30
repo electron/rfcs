@@ -14,13 +14,13 @@ https://github.com/user-attachments/assets/b09bde3a-d2c5-46c3-b3ef-52dda994eb28
 
 ## Motivation
 
-While `Offscreen Rendering` allows developers to export a shared texture for embedding the browser's output into their own rendering programs efficiently, there are cases where developers may want the reverse: to import images into the browser. For example, broadcasting apps may use this feature to embed various input sources with modern frontend technologies, providing a contemporary user experience. By using shared textures, we can maximize performance and provide a standardized way to bridge images between Electron and native rendering programs.
+While Offscreen Rendering allows developers to export a shared texture for embedding the browser's output into their own rendering programs efficiently, there are cases where developers may want the reverse: to import images into the browser. For example, broadcasting apps may use this feature to embed various input sources with modern frontend technologies, providing a contemporary user experience. By using shared textures, we can maximize performance and provide a standardized way to bridge images between Electron and native rendering programs.
 
 ## API Design
 
 ### Module
 
-A new `sharedTexture` module will be added, available in both the sandboxed renderer process and the main process. This module provides the primary interface for importing external shared texture handles. The module handles lifetime management automatically, while still provide subtle API for advanced users. 
+A new `sharedTexture` module will be added, available in both the sandboxed renderer process and the main process. This module provides the primary interface for importing external shared texture handles. The module handles lifetime management automatically, while still providing subtle APIs for advanced users.
 
 ### Methods
 
@@ -28,11 +28,11 @@ A new `sharedTexture` module will be added, available in both the sandboxed rend
 
 > This method is only available in the main process.
 
-* `options` Object - Options for importing shared texture.
-  * `textureInfo` [SharedTextureImportTextureInfo](structures/shared-texture-import-texture-info.md) - The information of shared texture to import.
+* `options` Object - Options for importing a shared texture.
+  * `textureInfo` [SharedTextureImportTextureInfo](#sharedtextureimporttextureinfo-object) - The information of shared texture to import.
   * `allReferenceReleased` Function (optional) - Called when all references in all processes are released, you should keep native texture valid until this callback is called.
 
-Imports the shared texture from the given options. A copy of the native texture will be made, so that you can release the native texture after the import is complete.
+Imports the shared texture from the given options.
 
 Returns `SharedTextureImported` - The imported shared texture.
 
@@ -40,13 +40,13 @@ Returns `SharedTextureImported` - The imported shared texture.
 
 > This method is only available in the main process.
 
-* `options` Object - Options for sending shared texture. One and only one of the `webContents` or `webFrameMain` should be provided as the target.
-  * `webContents` [WebContents](web-contents.md) (optional) - The webContents to transfer the shared texture to.
-  * `webFrameMain` [WebFrameMain](web-frame-main.md) (optional) - The webFrameMain to transfer the shared texture to. You'll need to enable `nodeIntegrationInSubFrames` for this, since this feature requires [IPC](https://www.electronjs.org/docs/latest/api/web-frame-main#frameipc-readonly) between main and the frame.
-  * `importedSharedTexture` [SharedTextureImported](structures/shared-texture-imported.md) - The imported shared texture.
+* `options` Object - Options for sending a shared texture. Exactly one of `webContents` or `webFrameMain` must be provided as the target.
+  * `webContents` [WebContents](https://www.electronjs.org/docs/latest/api/web-contents) (optional) - The webContents to transfer the shared texture to.
+  * `webFrameMain` [WebFrameMain](https://www.electronjs.org/docs/latest/api/web-frame-main) (optional) - The webFrameMain to transfer the shared texture to. You'll need to enable `nodeIntegrationInSubFrames` for this, since this feature requires [IPC](https://www.electronjs.org/docs/latest/api/web-frame-main#frameipc-readonly) between main and the frame.
+  * `importedSharedTexture` [SharedTextureImported](#sharedtextureimported-object) - The imported shared texture.
 * `...args` any[] - Additional arguments to pass to the renderer process.
 
-Send the imported shared texture to a renderer process. You must register receiver at renderer process before calling this method. This method has a 1000ms timeout, ensure the receiver is set and the renderer process is alive before calling this method.
+Send the imported shared texture to a renderer process. You must register a receiver in the renderer process before calling this method. This method has a 1000ms timeout; ensure the receiver is set and the renderer process is alive before calling this method.
 
 Returns `Promise<void>` - Resolves when the transfer is complete.
 
@@ -56,7 +56,7 @@ Returns `Promise<void>` - Resolves when the transfer is complete.
 
 * `callback` Function\<Promise\<void\>\> - The function to receive the imported shared texture.
   * `receivedSharedTextureData` Object - The data received from the main process.
-    * `importedSharedTexture` [SharedTextureImported](structures/shared-texture-imported.md) - The imported shared texture.
+    * `importedSharedTexture` [SharedTextureImported](#sharedtextureimported-object) - The imported shared texture.
   * `...args` any[] - Additional arguments passed from the main process.
 
 Set a callback to receive imported shared textures from the main process.
@@ -65,7 +65,7 @@ Set a callback to receive imported shared textures from the main process.
 
 #### `sharedTexture.subtle` [SharedTextureSubtle](#sharedtexturesubtle-object)
 
-Provides subtle APIs to interact with imported shared texture for advanced users.
+Provides subtle APIs to interact with an imported shared texture for advanced users.
 
 ### Structures
 
@@ -80,47 +80,47 @@ Provides subtle APIs to interact with imported shared texture for advanced users
 
 #### SharedTextureImported Object
 
-* `textureId` string - The unique identifier of this shared texture imported.
-* `getVideoFrame` Function\<[VideoFrame](https://developer.mozilla.org/en-US/docs/Web/API/VideoFrame)\> - Create a `VideoFrame` that use the imported shared texture at current process. You can call `VideoFrame.close()` once you've finished using, the underlying resources will wait for GPU finish internally.
-* `release` Function - Release this object's reference of this shared texture imported. The underlying resource will be alive until every reference released.
+* `textureId` string - The unique identifier of this imported shared texture.
+* `getVideoFrame` Function\<[VideoFrame](https://developer.mozilla.org/en-US/docs/Web/API/VideoFrame)\> - Create a `VideoFrame` that uses the imported shared texture in the current process. You can call `VideoFrame.close()` once you've finished using it; the underlying resources will wait for GPU completion internally.
+* `release` Function - Release this object's reference to the imported shared texture. The underlying resource will be alive until every reference is released.
 * `subtle` [SharedTextureImportedSubtle](#sharedtextureimportedsubtle-object) - Provides subtle APIs to interact with imported shared texture for advanced users.
 
 #### SharedTextureSubtle Object
 
 * `importSharedTexture` Function\<[SharedTextureImportedSubtle](#sharedtextureimportedsubtle-object)\> - Imports the shared texture from the given options. Returns the imported shared texture.
   * `textureInfo` [SharedTextureImportTextureInfo](#sharedtextureimporttextureinfo-object) - The information of shared texture to import.
-* `finishTransferSharedTexture` Function\<[SharedTextureImportedSubtle](#sharedtextureimportedsubtle-object)\> - Finishes the transfer of the shared texture and get the transferred shared texture. Returns the imported shared texture from the transfer object.
+* `finishTransferSharedTexture` Function\<[SharedTextureImportedSubtle](#sharedtextureimportedsubtle-object)\> - Finishes the transfer and returns the imported shared texture from the transfer object.
   * `transfer` [SharedTextureTransfer](#sharedtexturetransfer-object) - The transfer object of the shared texture.
 
 #### SharedTextureSyncToken Object
 
-* `syncToken` string - The opaque data for sync token.
+* `syncToken` string - Opaque data for the sync token.
 
 #### SharedTextureTransfer Object
 
-* `transfer` string - The opaque transfer data of the shared texture, can be transferred across Electron processes.
+* `transfer` string - Opaque transfer data for the shared texture; can be transferred across Electron processes.
 * `syncToken` string - The opaque sync token data for frame creation.
 * `pixelFormat` string - The pixel format of the texture.
 * `codedSize` [Size](https://github.com/electron/electron/blob/main/docs/api/structures/size.md) - The full dimensions of the shared texture.
 * `visibleRect` [Rectangle](https://github.com/electron/electron/blob/main/docs/api/structures/rectangle.md) - A subsection of [0, 0, codedSize.width, codedSize.height]. In common cases, it is the full section area.
 * `timestamp` number - A timestamp in microseconds that will be reflected to `VideoFrame`.
 
-Do not modify any property, and use `sharedTexture.subtle.finishTransferSharedTexture` to get [`SharedTextureImported`](#sharedtextureimported-object) back.
+Do not modify any property; use `sharedTexture.subtle.finishTransferSharedTexture` to get [`SharedTextureImported`](#sharedtextureimported-object) back.
 
 #### SharedTextureImportedSubtle Object
 
-* `getVideoFrame` Function\<[VideoFrame](https://developer.mozilla.org/en-US/docs/Web/API/VideoFrame)\> - Create a `VideoFrame` that use the imported shared texture at current process. You can call `VideoFrame.close()` once you've finished using, the underlying resources will wait for GPU finish internally.
-* `release` Function - Release the resources. If you transferred and get multiple `SharedTextureImported`, you have to `release` it on every one of them. The resource on GPU process will be finally destroyed when last one is released.
+* `getVideoFrame` Function\<[VideoFrame](https://developer.mozilla.org/en-US/docs/Web/API/VideoFrame)\> - Create a `VideoFrame` that uses the imported shared texture in the current process. You can call `VideoFrame.close()` once you've finished using it; the underlying resources will wait for GPU completion internally.
+* `release` Function - Release the resources. If you transferred and obtained multiple `SharedTextureImported`, you must call `release` on each of them. The resource in the GPU process will be finally destroyed when the last one is released.
   * `callback` Function (optional) - Callback when GPU command buffer finished using this shared texture. It provides a precise event to safely release dependent resources. For example, if this object is created by `finishTransferSharedTexture`, you can use this callback to safely release the original one that called `startTransferSharedTexture` in other processes. You can also release the source shared texture that was used to `importSharedTexture` safely.
-* `startTransferSharedTexture` Function\<[SharedTextureTransfer](#sharedtexturetransfer-object)\> - Create a `SharedTextureTransfer` that can be serialized and transfer to other processes.
-* `getFrameCreationSyncToken` Function\<[SharedTextureSyncToken](#sharedtexturesynctoken-object)\> - This method is for advanced users. If used, it is typically called after `finishTransferSharedTexture`, and should be passed to the object which was called `startTransferSharedTexture` to prevent the source object release the underlying resource before the target object actually acquire the reference at gpu process asyncly.
-* `setReleaseSyncToken` Function - This method is for advanced users. If used, this object's underlying resource will not be released until the set sync token is fulfilled at gpu process. By using sync tokens, users are not required to use release callbacks for lifetime management.
+* `startTransferSharedTexture` Function\<[SharedTextureTransfer](#sharedtexturetransfer-object)\> - Create a `SharedTextureTransfer` that can be serialized and transferred to other processes.
+* `getFrameCreationSyncToken` Function\<[SharedTextureSyncToken](#sharedtexturesynctoken-object)\> - For advanced users. Typically called after `finishTransferSharedTexture`, and passed to the object that called `startTransferSharedTexture` to prevent the source object from releasing the underlying resource before the target object actually acquires the reference in the GPU process asynchronously.
+* `setReleaseSyncToken` Function - For advanced users. If used, this object's underlying resource will not be released until the set sync token is fulfilled in the GPU process. By using sync tokens, users are not required to use release callbacks for lifetime management.
   * `syncToken` [SharedTextureSyncToken](#sharedtexturesynctoken-object) - The sync token to set.
 
 #### SharedTextureHandle Object
 
-* `ntHandle` Buffer (optional) _Windows_ - NT HANDLE holds the shared texture. Note that this NT HANDLE is local to current process.
-* `ioSurface` Buffer (optional) _macOS_ - IOSurfaceRef holds the shared texture. Note that this IOSurface is local to current process (not global).
+* `ntHandle` Buffer (optional) _Windows_ - NT HANDLE holds the shared texture. Note that this NT HANDLE is local to the current process.
+* `ioSurface` Buffer (optional) _macOS_ - IOSurfaceRef holds the shared texture. Note that this IOSurface is local to the current process (not global).
 * `nativePixmap` Object (optional) _Linux_ - Structure contains planes of shared texture.
   * `planes` Object[] _Linux_ - Each plane's info of the shared texture.
     * `stride` number - The strides and offsets in bytes to be used when accessing the buffers via a memory mapping. One per plane per entry.
@@ -128,13 +128,13 @@ Do not modify any property, and use `sharedTexture.subtle.finishTransferSharedTe
     * `size` number - Size in bytes of the plane. This is necessary to map the buffers.
     * `fd` number - File descriptor for the underlying memory object (usually dmabuf).
   * `modifier` string _Linux_ - The modifier is retrieved from GBM library and passed to EGL driver.
-  * `supportsZeroCopyWebGpuImport` boolean _Linux_ - Indicates whether supports zero copy import to WebGPU.
+  * `supportsZeroCopyWebGpuImport` boolean _Linux_ - Indicates whether zero-copy import to WebGPU is supported.
 
 ## Guide-level explanation
 
 ### Managed API Example Usage Walkthrough
 
-In this section, we will use the output of offscreen rendering as an example of an external shared texture, importing and rendering it in another window. We use managed version of the API for easier lifetime management. 
+In this section, we will use the output of offscreen rendering as an example of an external shared texture, importing and rendering it in another window. We use the managed version of the API for easier lifetime management. 
 
 1. Import the `sharedTexture` module.
 
@@ -177,26 +177,26 @@ osr.webContents.on('paint', async (event) => {
   const imported = sharedTexture.importSharedTexture({
       textureInfo: texture.textureInfo,
       // This will be called when all references of the imported shared
-      // texture are released. When this get called, you can safely release
+      // texture are released. When this is called, you can safely release
       // the source native texture.
       allReferenceReleased() {
-        // All reference are released, release the source texture.
+        // All references are released, release the source texture.
         texture.release()
       }
   });
 
-  // Use util method to transfer to renderer process
-  // This has a timeout to prevent your renderer is dead or did not
-  // register receiver with `sharedTexture.setSharedTextureReceiver`.
+  // Use the util method to transfer to the renderer process
+  // This has a timeout to prevent your renderer being dead or not having
+  // registered receiver with `sharedTexture.setSharedTextureReceiver`.
   await sharedTexture.sendSharedTexture({
     webContents: win.webContents,
     importedSharedTexture: imported
   });
 
-  // You can release here as we're done using it at main process. 
+  // You can release here as we're done using it in the main process. 
   // The receiver will need to call `release()` at the end of their usage.
   // The underlying resource will keep alive until all holders called
-  // `release()`, and they are managed automatically to see if all
+  // `release()`, and references are managed automatically to track when all
   // holders are released.
   imported.release();
 });
@@ -391,9 +391,9 @@ This managed API will automatically handle IPC and reference counting for users.
 
 The managed API is designed to be easy to use for most users. It automatically handles IPC and reference counting for users, which is a pain for users to manually manage.
 
-1. It automatically passes sync tokens through Electron IPC, with async API.
-2. It automatically count references across processes, and detects if there's a leak.
-3. It provides a more clear API for users to use, and easier to understand.
+1. It automatically passes sync tokens through Electron IPC, with an async API.
+2. It automatically counts references across processes, and detects if there's a leak.
+3. It provides a clearer API for users to use, and is easier to understand.
 
 ### Subtle API Design Considerations
 
@@ -437,7 +437,7 @@ Ideally, if we were in Chromium, we could use mojo to create a `PendingRemote` c
 
 #### Copy source texture
 
-Make a copy of source texture at import time is also considered, but it's not ideal. Firstly, it introduces one extra copy and doubles the GPU memory usage. Secondly, the performance is not ideal if we make user waits for the copy to complete. Thus, I choose to not provide copy ability and encourage users to listen for `allReferenceReleased` callback to release the source texture.
+Making a copy of the source texture at import time was also considered, but it's not ideal. First, it introduces an extra copy and doubles GPU memory usage. Second, performance suffers if we make the user wait for the copy to complete. Thus, we choose not to provide a copy option and encourage users to listen for the `allReferenceReleased` callback to release the source texture.
 
 #### Cautions of lifecycle management
 
@@ -493,5 +493,5 @@ Previously, users could import external images via video streams or bitmaps, whi
 ## Future possibilities
 
 - Performance: It would be meaningful to profile the overhead of managing the lifecycle through Electron IPC callbacks.
-- Provide a utility method to let user import global `IOSurface` or global D3D11 `HANDLE`.
+- Provide a utility method to let users import a global `IOSurface` or global D3D11 `HANDLE`.
 - Since we can import a shared texture as a `SharedImage`, it may be possible to implement OSR using `SharedImage` instead of `FrameSinkVideoCapturer`.
