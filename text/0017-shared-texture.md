@@ -187,8 +187,11 @@ osr.webContents.on('paint', async (event) => {
 
   // Use util method to transfer to renderer process
   // This has a timeout to prevent your renderer is dead or did not
-  // register receiver with `sharedTexture.receiveFromMain`.
-  await sharedTexture.sendToRenderer(win.webContents, imported);
+  // register receiver with `sharedTexture.setSharedTextureReceiver`.
+  await sharedTexture.sendSharedTexture({
+    webContents: win.webContents,
+    importedSharedTexture: imported
+  });
 
   // You can release here as we're done using it at main process. 
   // The receiver will need to call `release()` at the end of their usage.
@@ -206,10 +209,10 @@ const { sharedTexture } = require('electron');
 const { contextBridge } = require('electron/renderer');
 
 contextBridge.exposeInMainWorld('textures', {
-  onSharedTexture: (cb) => {
-    sharedTexture.receiveFromMain(async (imported, id) => {
+  setSharedTextureReceiver: (cb) => {
+    sharedTexture.setSharedTextureReceiver(async (data) => {
       // Provide the imported shared texture to the renderer process
-      await cb(imported);
+      await cb(data.importedSharedTexture);
     });
   }
 });
@@ -359,7 +362,7 @@ initWebGpu().catch((err) => {
 6. Obtain a `VideoFrame` from the imported shared texture and render it. After submitting the WebGPU command buffer, you can call `close` on the `VideoFrame`.
 
 ```js
-window.textures.onSharedTexture(async (imported) => {
+window.textures.setSharedTextureReceiver(async (imported) => {
   try {
     // Get VideoFrame from the imported texture
     const frame = imported.getVideoFrame();
@@ -490,5 +493,5 @@ Previously, users could import external images via video streams or bitmaps, whi
 ## Future possibilities
 
 - Performance: It would be meaningful to profile the overhead of managing the lifecycle through Electron IPC callbacks.
-- OSR: Since we can import a shared texture as a `SharedImage`, it may be possible to implement OSR using `SharedImage` instead of `FrameSinkVideoCapturer`.
 - Provide a utility method to let user import global `IOSurface` or global D3D11 `HANDLE`.
+- Since we can import a shared texture as a `SharedImage`, it may be possible to implement OSR using `SharedImage` instead of `FrameSinkVideoCapturer`.
