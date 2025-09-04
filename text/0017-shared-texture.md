@@ -47,7 +47,7 @@ Returns `SharedTextureImported` - The imported shared texture.
 
 Send the imported shared texture to a renderer process. You must register a receiver in the renderer process before calling this method. This method has a 1000ms timeout; ensure the receiver is set and the renderer process is alive before calling this method.
 
-Returns `Promise<void>` - Resolves when the transfer completes. If the receiver callback returns user-defined data, this promise resolves with that value.
+Returns `Promise<void>` - Resolves when the transfer completes.
 
 #### `sharedTexture.setSharedTextureReceiver(callback)` _Experimental_
 
