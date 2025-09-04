@@ -40,21 +40,20 @@ Returns `SharedTextureImported` - The imported shared texture.
 
 > This method is only available in the main process.
 
-* `options` Object - Options for sending a shared texture. Exactly one of `webContents` or `webFrameMain` must be provided as the target.
-  * `webContents` [WebContents](https://www.electronjs.org/docs/latest/api/web-contents) (optional) - The webContents to transfer the shared texture to.
-  * `webFrameMain` [WebFrameMain](https://www.electronjs.org/docs/latest/api/web-frame-main) (optional) - The webFrameMain to transfer the shared texture to. You'll need to enable `nodeIntegrationInSubFrames` for this, since this feature requires [IPC](https://www.electronjs.org/docs/latest/api/web-frame-main#frameipc-readonly) between main and the frame.
+* `options` Object - Options for sending a shared texture.
+  * `frame` [WebFrameMain](web-frame-main.md) - The target frame to transfer the shared texture to. For `WebContents` you can pass `webContents.mainFrame`. If you provide a `webFrameMain` that is not a main frame, you'll need to enable `webPreferences.nodeIntegrationInSubFrames` for this, since this feature requires [IPC](https://www.electronjs.org/docs/latest/api/web-frame-main#frameipc-readonly) between main and the frame.
   * `importedSharedTexture` [SharedTextureImported](#sharedtextureimported-object) - The imported shared texture.
 * `...args` any[] - Additional arguments to pass to the renderer process.
 
 Send the imported shared texture to a renderer process. You must register a receiver in the renderer process before calling this method. This method has a 1000ms timeout; ensure the receiver is set and the renderer process is alive before calling this method.
 
-Returns `Promise<any>` - Resolves when the transfer completes. If the receiver callback returns user-defined data, this promise resolves with that value.
+Returns `Promise<void>` - Resolves when the transfer completes. If the receiver callback returns user-defined data, this promise resolves with that value.
 
 #### `sharedTexture.setSharedTextureReceiver(callback)` _Experimental_
 
 > This method is only available in the renderer process.
 
-* `callback` Function\<Promise\<any\>\> - The function to receive the imported shared texture. Returns any user-defined data if needed.
+* `callback` Function\<Promise\<void\>\> - The function to receive the imported shared texture.
   * `receivedSharedTextureData` Object - The data received from the main process.
     * `importedSharedTexture` [SharedTextureImported](#sharedtextureimported-object) - The imported shared texture.
   * `...args` any[] - Additional arguments passed from the main process.
