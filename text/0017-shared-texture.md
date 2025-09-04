@@ -48,13 +48,13 @@ Returns `SharedTextureImported` - The imported shared texture.
 
 Send the imported shared texture to a renderer process. You must register a receiver in the renderer process before calling this method. This method has a 1000ms timeout; ensure the receiver is set and the renderer process is alive before calling this method.
 
-Returns `Promise<void>` - Resolves when the transfer is complete.
+Returns `Promise<any>` - Resolves when the transfer completes. If the receiver callback returns user-defined data, this promise resolves with that value.
 
 #### `sharedTexture.setSharedTextureReceiver(callback)` _Experimental_
 
 > This method is only available in the renderer process.
 
-* `callback` Function\<Promise\<void\>\> - The function to receive the imported shared texture.
+* `callback` Function\<Promise\<any\>\> - The function to receive the imported shared texture. Returns any user-defined data if needed.
   * `receivedSharedTextureData` Object - The data received from the main process.
     * `importedSharedTexture` [SharedTextureImported](#sharedtextureimported-object) - The imported shared texture.
   * `...args` any[] - Additional arguments passed from the main process.
@@ -189,7 +189,7 @@ osr.webContents.on('paint', async (event) => {
   // This has a timeout to prevent your renderer being dead or not having
   // registered receiver with `sharedTexture.setSharedTextureReceiver`.
   await sharedTexture.sendSharedTexture({
-    webContents: win.webContents,
+    frame: win.webContents.mainFrame,
     importedSharedTexture: imported
   });
 
