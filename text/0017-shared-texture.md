@@ -41,7 +41,7 @@ Returns `SharedTextureImported` - The imported shared texture.
 > This method is only available in the main process.
 
 * `options` Object - Options for sending a shared texture.
-  * `frame` [WebFrameMain](web-frame-main.md) - The target frame to transfer the shared texture to. For `WebContents` you can pass `webContents.mainFrame`. If you provide a `webFrameMain` that is not a main frame, you'll need to enable `webPreferences.nodeIntegrationInSubFrames` for this, since this feature requires [IPC](https://www.electronjs.org/docs/latest/api/web-frame-main#frameipc-readonly) between main and the frame.
+  * `frame` [WebFrameMain](web-frame-main.md) - The target frame to transfer the shared texture to. For `webContents` you can pass `webContents.mainFrame` as target. If you provide a `webFrameMain` that is not a main frame, you'll need to enable `webPreferences.nodeIntegrationInSubFrames` for this, since this feature requires [IPC](https://www.electronjs.org/docs/latest/api/web-frame-main#frameipc-readonly) between main and the frame.
   * `importedSharedTexture` [SharedTextureImported](#sharedtextureimported-object) - The imported shared texture.
 * `...args` any[] - Additional arguments to pass to the renderer process.
 
