@@ -64,7 +64,7 @@ Here's the schema I propose for the `windowStatePersistence` object. This is sim
 
 <br/>
 
-BaseWindowConstructorOptions schema - This would be passed by the developer in the BaseWindowConstructorOptions/BrowserWindowConstructorOptions
+`BaseWindowConstructorOptions` schema - This would be passed by the developer in the `BaseWindowConstructorOptions`/`BrowserWindowConstructorOptions`
 
 ```json
 {
@@ -92,7 +92,7 @@ OR
 
 Firstly, all the window states with their `windowStatePersistence` would be to loaded from disk synchronously during the startup process just like other preferences in Electron. Doing so would allow us the have the states in memory during window creation with minimal performance impact. 
 
-Secondly, once the states are loaded into memory, we can use them to restore the window state with the `windowStatePersistence` rules in place during window creation. An algorithm that handles all the edges would be required for this. Chromium's [WindowSizer::AdjustBoundsToBeVisibleOnDisplay](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=350) seems like a good reference point that handles some of the edge cases. Also, the default options provided in the BaseWindowConstructorOptions/BrowserWindowConstructorOptions constructor options would be overridden (if we are restoring state).
+Secondly, once the states are loaded into memory, we can use them to restore the window state with the `windowStatePersistence` rules in place during window creation. An algorithm that handles all the edges would be required for this. Chromium's [WindowSizer::AdjustBoundsToBeVisibleOnDisplay](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/window_sizer/window_sizer.cc;drc=0ec56065ba588552f21633aa47280ba02c3cd160;l=350) seems like a good reference point that handles some of the edge cases. Also, the default options provided in the `BaseWindowConstructorOptions`/`BrowserWindowConstructorOptions` constructor options would be overridden (if we are restoring state).
 
 We can respect the min/max height/width, fullscreenable, maximizable, minimizable properties set inside `BaseWindowConstructorOptions` if applicable. Meaning these properties would take a higher priority during the restoration of a window.
 
