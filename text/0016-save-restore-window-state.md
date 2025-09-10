@@ -102,17 +102,19 @@ Here's a reference to the variables we would saving be internally using PrefServ
 
 #### Developer-Facing Events
 
-I’m also considering emitting only a single event: `restored-window-state` which would be emitted after window construction. I'm unsure about the rest  `will-restore-window-state`, `will-save-window-state` and `saved-window-state`. My doubts regarding these are
+I’m also considering emitting only a single event: `restored-persisted-state` which would be emitted after window construction. 
 
-1) Static event for `will-restore-window-state`? Since restoration happens during window construction, should we add `BaseWindow.on('will-restore-window-state', ...)` as a static event to allow `e.preventDefault()` call before the JS window object exists? Without a static event it won't be possible to listen to this event meaningfully.
+I'm unsure about the rest  `will-restore-persisted-state`, `will-save-window-state` and `saved-window-state`. My doubts regarding these are
+
+1) Static event for `will-restore-persisted-state`? Since restoration happens during window construction, should we add `BaseWindow.on('will-restore-persisted-state', ...)` as a static event to allow `e.preventDefault()` call before the JS window object exists? Without a static event it won't be possible to listen to this event meaningfully.
 2) Save events: Is it worth adding `will-save-window-state` and `saved-window-state`? Chromium's PrefService doesn't emit events, so this might be tricky to implement cleanly.
 
-#### Event: 'restored-window-state'
+#### Event: 'restored-persisted-state'
 
 Emitted immediately after the window constructor completes.
 
 ```js
-win.on('restored-window-state', () => {
+win.on('restored-persisted-state', () => {
   console.log('Window state restored');
 });
 ```
@@ -263,7 +265,7 @@ I thought it would be inappropriate to enforce such rules on Electron apps. Thus
 
 *What parts of the design do you expect to resolve through the RFC process before this gets merged?*
 - Should we switch from `name` to something more descriptive? Should we use the existing unique identifier `id` and allow developers to pass a unique `id`?
-- Static event for `will-restore-window-state`? Since restoration happens during window construction, should we add `BaseWindow.on('will-restore-window-state', ...)` as a static event to allow `e.preventDefault()` call before the JS window object exists? Without a static event it won't be possible to listen to this event meaningfully.
+- Static event for `will-restore-persisted-state`? Since restoration happens during window construction, should we add `BaseWindow.on('will-restore-persisted-state', ...)` as a static event to allow `e.preventDefault()` call before the JS window object exists? Without a static event it won't be possible to listen to this event meaningfully.
 - Save events: Is it worth adding `will-save-window-state` and `saved-window-state`? Chromium's PrefService doesn't emit events, so this might be tricky to implement cleanly.
 
 ## Future possibilities
