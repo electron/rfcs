@@ -125,7 +125,7 @@ Here's how it would land in the electron documentation.
 
 * `name` string (optional) - A unique identifier for the window to enable features such as state persistence. An error will be thrown in the constructor if a window exists using the same identifier. It can only be reused after the corresponding window has been destroyed. An error is thrown if the name is already in use. This is not the visible title shown to users on the title bar.
 
-* `windowStatePersistence` ([WindowStatePersistence] | Boolean) (optional) - Configures or enables the persistence of window state (position, size, maximized state, etc.) across application restarts. Has no effect if window `name` is not provided. _Experimental_
+`windowStatePersistence` ([WindowStatePersistence] | boolean) (optional) - Configures or enables the persistence of window state (position, size, maximized state, etc.) across application restarts. Has no effect if window `name` is not provided. Automatically disabled when there is no available display. _Experimental_
 
 ### WindowStatePersistence Object
 
