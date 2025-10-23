@@ -39,15 +39,37 @@ The largest consideration for changes to the `clipboard` module is to what degre
 
 This design recommends alignment with W3C where possible, with some additional APIs exposed to handle desktop use cases which aren’t considered by the specification.  Given this approach, we will preserve some of the existing APIs, remove some of the existing APIs, and, modify the rest of the APIs to be in compliance with the W3C spec as much as possible.
 
-**APIs to Preserve**
-* `clipboard.clear([type])`
-  * Not supported through existing Web APIs or in the specification.
-* `clipboard.readText([type])`
-  * Already implemented per specification.
-* `clipboard.writeText(text[, type])`
-  * Already implemented per specification.
-* `clipboard.has(format[, type])` 
-  * Convenience method to quickly check if a particular format is available.
+**APIs to add**
+
+On Linux, instead of passing a type of `selection` to access the selection clipboard, the following
+APIS will be added to work with the selection clipboard:
+* `clipboard.selection.clear()` _Linux_
+  * Clears the selection clipboard.  Replaces `clipboard.clear('selection')`.
+* `clipboard.selection.has(format)` _Linux_
+  * Check if a particular format is available on the selection clipboard.  Replaces `clipboard.has(format,'selection)`.
+* `clipboard.selection.read()` _Linux_
+  * Reads from the selection clipboard following the [Web API clipboard.read](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read) spec.  Replaces `clipboard.read('selection')` and `clipboard.readBuffer('selection)`.
+  * Returns a Promise that resolves with an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing the 
+    clipboard's contents. The promise is rejected if permission to access the clipboard is not granted.
+  * Custom MIME types e.g. `electron application/filepath` will be used to allow support of non-standard clipboard formats.  This follows 
+    the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
+    The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
+  * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
+* `clipboard.selection.readText()` _Linux_
+  * Read text from the selection clipboard. Replaces `clipboard.readText('selection)`.
+* `clipboard.selection.write(data)​`
+  * `data` an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing data to be written to the clipboard.
+  * Writes to the selection clipboard following the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).  Replaces `clipboard.write(data, 'selection)` and `clipboard.writeBuffer(format, buffer, 'selection')`.
+* `clipboard.write(data)​`
+  * `data` an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing data to be written to the clipboard.
+  * This API will be modified to bring into spec compliance with the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).
+  * Returns a Promise which is resolved when the data has been written to the clipboard. The promise is rejected if the clipboard is unable to complete the clipboard access.
+  * Custom MIME types e.g. `electron application/filepath` will be used to allow support of non-standard clipboard formats.  This follows 
+    the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
+    The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
+  * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.  
+* `clipboard.selection.writeText(text)` _Linux_
+  * Write text to the selection clipboard.  Replaces `clipboard.writeText(text, 'selection)`.
 
 **APIs to Remove**
 * `clipboard.availableFormats([type])`
@@ -57,9 +79,9 @@ This design recommends alignment with W3C where possible, with some additional A
 * `clipboard.writeBookmark(title, url[, type])`
   * Superseded by `clipboard.write` with custom `electron/bookmark` MIME type
 * `clipboard.readBuffer(format)`
-  * Superseded by `clipboard.read`[Web API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read)
+  * Superseded by `clipboard.read`[Web API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read) with a custom MIME type `electron application/osclipboard` with a parameter `format`, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
 * `clipboard.writeBuffer(format, buffer[, type])`
-  * Superseded by `clipboard.write` [Web API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write)
+  * Superseded by `clipboard.write` [Web API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write) with a custom MIME type `electron application/osclipboard` with a parameter `format`, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows. 
 * `clipboard.readFindText()` _macOS_
   * Superseded by `clipboard.read` with custom `electron/findtext` MIME type
 * `clipboard.writeFindText(text)`
@@ -78,25 +100,69 @@ This design recommends alignment with W3C where possible, with some additional A
   * Superseded by `clipboard.write` with `application/rtf` MIME type
 
 **APIs to Modify**
-* `clipboard.read([clipboardType])`
-  * `clipboardType` string (optional) - Can be `selection` or `clipboard`; default is `clipboard`. `selection` is only available on Linux.
+* `clipboard.clear()`
+  * This is not supported through existing Web APIs or in the specification, so keep and modify
+    to drop type parameter in favor of `clipboard.selection.clear()` when clearing the selection
+    clipboard on Linux.
+* `clipboard.readText()`
+  * Already implemented per specification. Modify to drop type parameter in favor of
+    `clipboard.selection.readText()` when reading text from the selection clipboard on Linux.
+* `clipboard.writeText(text)`
+  * Already implemented per specification. Modify to drop type parameter in favor of
+    `clipboard.selection.writeText(text)` when writing text from the selection clipboard on Linux.
+* `clipboard.has(format)`
+  * This is not supported through existing Web APIs or in the specification, so keep and modify
+    to drop type parameter in favor of `clipboard.selection.has(format)` to check the selection
+    clipboard on Linux.
+
+* `clipboard.read()`
   * This API will be modified to bring into spec compliance with the [Web API clipboard.read](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read)
   * Returns a Promise that resolves with an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing the 
     clipboard's contents. The promise is rejected if permission to access the clipboard is not granted.
-  * Ensure that raw formats are preserved
   * Custom MIME types e.g. `electron application/filepath` will be used to allow support of non-standard clipboard formats.  This follows 
     the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
-* `clipboard.write(data[, clipboardType]])​`
+  * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
+* `clipboard.write(data)​`
   * `data` an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing data to be written to the clipboard.
-  * `clipboardType` string (optional) - Can be `selection` or `clipboard`; default is `clipboard`. `selection` is only available on Linux.
   * This API will be modified to bring into spec compliance with the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).
   * Returns a Promise which is resolved when the data has been written to the clipboard. The promise is rejected if the clipboard is unable to complete the clipboard access.
-  * Ensure that raw formats are preserved
   * Custom MIME types e.g. `electron application/filepath` will be used to allow support of non-standard clipboard formats.  This follows 
     the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
-  * clipboardType is only used for Linux to specify if clipboard is regular clipboard or `selection` clipboard.
+  * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
+
+  ### API Migration Table
+
+  | Old API | New API |
+  |---------|---------|
+  | `clipboard.availableFormats([type])` | `clipboard.read()` - iterate through ClipboardItem array and collect types |
+  | `clipboard.clear()` | `clipboard.clear()` (no type parameter) |
+  | `clipboard.clear('selection')` _Linux_ | `clipboard.selection.clear()` |
+  | `clipboard.has(format)` | `clipboard.has(format)` (no type parameter) |
+  | `clipboard.has(format, 'selection')` _Linux_ | `clipboard.selection.has(format)` |
+  | `clipboard.read()` | `clipboard.read()` (returns Promise with ClipboardItem array) |
+  | `clipboard.read('selection')` _Linux_ | `clipboard.selection.read()` (returns Promise with ClipboardItem array) |
+  | `clipboard.readBookmark()` | `clipboard.read()` with `electron application/bookmark` MIME type |
+  | `clipboard.readBuffer(format)` | `clipboard.read()` with `electron application/osclipboard;format="..."` MIME type |
+  | `clipboard.readBuffer('selection')` _Linux_ | `clipboard.selection.read()` with `electron application/osclipboard;format="..."` MIME type |
+  | `clipboard.readFindText()` _macOS_ | `clipboard.read()` with `electron application/findtext` MIME type |
+  | `clipboard.readHTML([type])` | `clipboard.read()` with `text/html` MIME type |
+  | `clipboard.readImage([type])` | `clipboard.read()` with `image/*` MIME type |
+  | `clipboard.readRTF([type])` | `clipboard.read()` with `application/rtf` MIME type |
+  | `clipboard.readText()` | `clipboard.readText()` (no type parameter) |
+  | `clipboard.readText('selection')` _Linux_ | `clipboard.selection.readText()` |
+  | `clipboard.write(data)` | `clipboard.write(data)` (accepts ClipboardItem array, returns Promise) |
+  | `clipboard.write(data, 'selection')` _Linux_ | `clipboard.selection.write(data)` (accepts ClipboardItem array, returns Promise) |
+  | `clipboard.writeBookmark(title, url[, type])` | `clipboard.write()` with `electron application/bookmark` MIME type |
+  | `clipboard.writeBuffer(format, buffer[, type])` | `clipboard.write()` with `electron application/osclipboard;format="..."` MIME type |
+  | `clipboard.writeBuffer(format, buffer, 'selection')` _Linux_ | `clipboard.selection.write()` with `electron application/osclipboard;format="..."` MIME type |
+  | `clipboard.writeFindText(text)` _macOS_ | `clipboard.write()` with `electron application/findtext` MIME type |
+  | `clipboard.writeHTML(markup[, type])` | `clipboard.write()` with `text/html` MIME type |
+  | `clipboard.writeImage(image[, type])` | `clipboard.write()` with `image/*` MIME type |
+  | `clipboard.writeRTF(text[, type])` | `clipboard.write()` with `application/rtf` MIME type |
+  | `clipboard.writeText(text)` | `clipboard.writeText(text)` (no type parameter) |
+  | `clipboard.writeText(text, 'selection')` _Linux_ | `clipboard.selection.writeText(text)` |
 
 ## Reference-level explanation
 
@@ -104,8 +170,17 @@ This design recommends alignment with W3C where possible, with some additional A
 ```js
 const { serialize, deserialize } = require("v8")
 
+function getClipboardToUse(clipboardType) {  
+  if (clipboardType == 'selection') {
+    return clipboard.selection;
+  } else {
+    return clipboard;
+  }
+}
+
 async function readClipboard(format, clipboardType) {
-  const clipboardItems = await clipboard.read(clipboardType);  
+  const clipboardToUse = getClipboardToUse(clipboardType);
+  const clipboardItems = clipboardToUse.read();
   const foundItem = clipboardItems.find(clipboardItem => {
     return clipboardItem.types.includes(format);
   });
@@ -116,15 +191,17 @@ async function readClipboard(format, clipboardType) {
 }
 
 async function writeClipboard(format, text, clipboardType) {
-  return clipboard.write([
+  const clipboardToUse = getClipboardToUse(clipboardType);
+  return clipboardToUse.write([
     {
       [format]: Buffer.from(text)
     }
-  ], clipboardType);
+  ]);
 }
 
 async function readBuffer(format, clipboardType) {
-  const clipboardItems = await clipboard.read(clipboardType);
+  const clipboardToUse = getClipboardToUse(clipboardType);
+  const clipboardItems = await clipboardToUse.read();
   const foundItem = clipboardItems.find(clipboardItem => {
     return clipboardItem.types.includes(format);
   });
@@ -135,15 +212,17 @@ async function readBuffer(format, clipboardType) {
 }
 
 async function writeBuffer(format, buffer, clipboardType) {
-  return clipboard.write([
+  const clipboardToUse = getClipboardToUse(clipboardType);
+  return clipboardToUse.write([
     {
       [format]: buffer
     }
-  ], clipboardType);
+  ]);
 }
 
 async function availableFormats(clipboardType) {
-  const clipboardItems = await clipboard.read(clipboardType);
+  const clipboardToUse = getClipboardToUse(clipboardType);
+  const clipboardItems = await clipboardToUse.read();
   const clipboardFormats = [];  
   for (const clipboardItem of clipboardItems) {
     for (const type of clipboardItem.types) {
@@ -156,13 +235,8 @@ async function availableFormats(clipboardType) {
 }
 
 async function has(format, clipboardType) {
-  const clipboardItems = await clipboard.read(clipboardType);
-  const matchingClipboardItem = clipboardItems.find(clipboardItem => {
-    return clipboardItem.types.includes(format);
-  });
-  if (matchingClipboardItem) {
-    return true;
-  }
+  const clipboardToUse = getClipboardToUse(clipboardType);
+  return clipboardToUse.has(format);
 }
 
 const BOOKMARK_MIME_TYPE = 'electron application/bookmark';
@@ -215,7 +289,8 @@ async function writeHTML(markup, clipboardType) {
 const PNG_MIME_TYPE = 'image/png';
 const JPEG_MIME_TYPE = 'image/jpeg';
 async function readImage(clipboardType)​ {
-  const clipboardItems = await clipboard.read(clipboardType);
+  const clipboardToUse = getClipboardToUse(clipboardType);
+  const clipboardItems = await clipboardToUse.read();
   //Look for PNG first  
   let foundItem = clipboardItems.find(clipboardItem => {
     return clipboardItem.types.includes(PNG_MIME_TYPE);
@@ -237,15 +312,16 @@ async function readImage(clipboardType)​ {
 }
 
 async function writeImage(image, clipboardType)​ {
+  const clipboardToUse = getClipboardToUse(clipboardType);
   const buffer = image.getBitmap();
   const dataUrl = image.toDataURL();
   const regex = /^data:(.+\/.+);.*$/;
   const matches = dataUrl.match(regex);
-  return clipboard.write([
+  return clipboardToUse.write([
     {
       [matches[1]]: buffer
     }
-  ], clipboardType);
+  ]);
 }
 
 const RTF_MIME_TYPE = 'application/rtf';
