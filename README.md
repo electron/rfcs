@@ -95,10 +95,18 @@ flowchart TD
 - **Open a pull request.** Once the pull request is open, the RFC is considered Proposed and is
   open to general feedback. RFC authors are expected to engage with this feedback to arrive at a
   consensus with community stakeholders.
+- If there is difficulty reaching consensus asynchronously through PR comments, the RFC author
+  or reviewers may propose a synchronous meeting to discuss the RFC. In this meeting, the RFC
+  author will present the RFC to the [API WG](https://github.com/electron/governance/tree/main/wg-api)
+  and any other stakeholders that the API WG invites to join the discussion. The goal of this meeting
+  is to efficiently discuss parts of the RFC for which there are concerns or disagreements among
+  stakeholders. After the meeting, the RFC author should update the RFC to reflect any decisions which
+  were made in the meeting.
 - Eventually, Electron’s API WG will decide if the RFC is a candidate for inclusion in Electron.
-  The RFC should be reviewed by at least two WG members, and presented to a quorum of the group at a
-  synchronous meeting. If consensus is achieved, then the RFC will be a candidate for acceptance.
-- This will trigger a two-week final comment period for the RFC. Unless any issues come up that
+  If a simple majority of the WG members have approved the RFC pull request, and there are no outstanding
+  requests for changes, then the RFC will be a candidate for acceptance.
+- Once an RFC is a candidate for acceptance, an API WG member will add a `final-comment-period` label.
+  This will trigger a two-week final comment period for the RFC. Unless any issues come up that
   the WG consider to block the implementation of the RFC, it will be merged and marked as Active.
 
 ### Working on an Active RFC
