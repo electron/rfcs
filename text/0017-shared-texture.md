@@ -2,7 +2,8 @@
 - RFC PR: [electron/rfcs#17](https://github.com/electron/rfcs/pull/17)
 - Electron Issues: [electron/electron#46779](https://github.com/electron/electron/issues/46779)
 - Reference Implementation: [electron/electron#46811](https://github.com/electron/electron/pull/46811)
-- Status: **Active**
+- Electron Commit: [electron/electron@bab11f8](https://github.com/electron/electron/commit/bab11f8c7b1d7acdf7a16c81951613e72ef681dc)
+- Status: **Completed**
 
 # Import Shared Texture
 
