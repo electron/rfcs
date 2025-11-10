@@ -41,6 +41,15 @@ This design recommends alignment with W3C where possible, with some additional A
 
 **APIs to add**
 
+### Event: 'clipboardchange'
+
+Returns:
+
+* `event` Event
+  * `types` string[] An array of MIME types that are available in the clipboard.
+
+The clipboardchange event fires whenever the contents of the system clipboard are changed.
+
 On Linux, instead of passing a type of `selection` to access the selection clipboard, the following
 APIS will be added to work with the selection clipboard:
 * `clipboard.selection.clear()` _Linux_
@@ -50,7 +59,7 @@ APIS will be added to work with the selection clipboard:
 * `clipboard.selection.read()` _Linux_
   * Reads from the selection clipboard following the [Web API clipboard.read](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read) spec.  Replaces `clipboard.read('selection')` and `clipboard.readBuffer('selection)`.
   * Returns a Promise that resolves with an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing the 
-    clipboard's contents. The promise is rejected if permission to access the clipboard is not granted.
+    clipboard's contents.
   * Custom MIME types e.g. `electron application/filepath` will be used to allow support of non-standard clipboard formats.  This follows 
     the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
@@ -60,7 +69,6 @@ APIS will be added to work with the selection clipboard:
 * `clipboard.selection.write(data)​`
   * `data` an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing data to be written to the clipboard.
   * Writes to the selection clipboard following the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).  Replaces `clipboard.write(data, 'selection)` and `clipboard.writeBuffer(format, buffer, 'selection')`.
-* `clipboard.write(data)​`
   * `data` an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing data to be written to the clipboard.
   * This API will be modified to bring into spec compliance with the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).
   * Returns a Promise which is resolved when the data has been written to the clipboard. The promise is rejected if the clipboard is unable to complete the clipboard access.
@@ -118,7 +126,7 @@ APIS will be added to work with the selection clipboard:
 * `clipboard.read()`
   * This API will be modified to bring into spec compliance with the [Web API clipboard.read](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read)
   * Returns a Promise that resolves with an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing the 
-    clipboard's contents. The promise is rejected if permission to access the clipboard is not granted.
+    clipboard's contents.
   * Custom MIME types e.g. `electron application/filepath` will be used to allow support of non-standard clipboard formats.  This follows 
     the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
@@ -131,6 +139,11 @@ APIS will be added to work with the selection clipboard:
     the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
   * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
+
+**Removing the Clipboard API from the renderer**
+
+Currently, the Electron clipboard API is available from non-sandboxed renderer processes.  This currently represents a security risk that should be closed.
+Additionally, given the refactor of the Electron clipboard API to match the W3C implementation it would be confusing to have two APIs available in the renderer with the same API surface but two different implementations.  The Electron clipboard API will still be able via the [contextBridge API](https://www.electronjs.org/docs/latest/api/context-bridge).
 
   ### API Migration Table
 
@@ -349,27 +362,3 @@ are still marked as `Experimental`.
 
 - [feat(clipboard): support read/write files PR](https://github.com/electron/electron/pull/47975)
 - [feat: add clipboard.writeFilePaths/readFilePaths APIs PR](https://github.com/electron/electron/pull/26693)
-
-## Unresolved questions
-
-- What parts of the design do you expect to resolve through the RFC process before this gets merged?
-- What parts of the design do you expect to resolve through the implementation of this feature
-  before stabilization?
-- What related issues do you consider out of scope for this RFC that could be addressed in the
-  future independently of the solution that comes out of this RFC?
-
-## Future possibilities
-
-Think about what the natural extension and evolution of your proposal would be and how it would
-affect the project as a whole in a holistic way. Try to use this section as a tool to more fully
-consider all possible interactions with the project in your proposal.
-
-This is also a good place to "dump ideas", if they are out of scope for the RFC you are writing but
-otherwise related.
-
-If you have tried and cannot think of any future possibilities, you may simply state that you
-cannot think of anything.
-
-Note that having something written down in the future possibilities section is not a reason to
-accept the current or a future RFC; such notes should be in the section on motivation or
-rationale in this or subsequent RFCs. The section merely provides additional information.
