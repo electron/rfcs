@@ -140,7 +140,7 @@ APIS will be added to work with the selection clipboard:
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
   * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
 
-**Removing the Clipboard API from the renderer**
+#### Removing the Clipboard API from the renderer
 
 Currently, the Electron clipboard API is available from non-sandboxed renderer processes.  This currently represents a security risk that should be closed.
 Additionally, given the refactor of the Electron clipboard API to match the W3C implementation it would be confusing to have two APIs available in the renderer with the same API surface but two different implementations.  The Electron clipboard API will still be able via the [contextBridge API](https://www.electronjs.org/docs/latest/api/context-bridge).
