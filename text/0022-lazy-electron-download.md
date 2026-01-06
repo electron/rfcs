@@ -1,12 +1,10 @@
-# RFC Template
+# Lazy Electron Download (Remove postinstall Script)
 
 - Start Date: 2025-09-18
 - RFC PR: [electron/rfcs#0022](https://github.com/electron/rfcs/pull/0022)
 - Electron Issues:
 - Reference Implementation:
 - Status: **Proposed**
-
-# Lazy Electron Download (Remove postinstall Script)
 
 ## Summary
 
@@ -17,11 +15,13 @@ Remove the `postinstall` script from the `electron` npm package and instead down
 The `postinstall` script in npm packages is a known attack vector in the npm ecosystem. Malicious packages can execute arbitrary code during installation, potentially compromising developer machines and CI/CD pipelines. Many security-conscious developers and organizations disable `postinstall` scripts entirely using `npm install --ignore-scripts` or `.npmrc` configuration. PNPM actually disables these scripts by default.
 
 Currently, the Electron npm package downloads the Electron binary during the `postinstall` phase. While this provides a good initial experience, it forces users who want to disable `postinstall` scripts to either:
+
 1. Accept the security risk of enabling postinstall scripts
 2. Manually handle Electron binary downloads through custom tooling
 3. Individually allowlist the Electron package (when this is supported)
 
 By moving the download to occur lazily when the `electron` CLI is first invoked, we can:
+
 - Allow security-conscious users to completely disable `postinstall` scripts
 - Maintain a transparent experience for most users (binary downloads when they first run `electron`)
 - Reduce the attack surface for supply chain attacks
@@ -86,7 +86,7 @@ RUN npx install-electron
 
 ## Reference-level explanation
 
-### Implementation Details
+### Implementation details
 
 1. **Remove postinstall script** from `package.json`:
    - Remove the `postinstall` script entry
@@ -134,7 +134,7 @@ async function main() {
 }
 ```
 
-### Migration Path
+### Migration path
 
 This is a breaking change only for specific edge cases. The migration path is:
 
@@ -154,13 +154,13 @@ This is a breaking change only for specific edge cases. The migration path is:
 
 ## Alternative designs considered
 
-1. **Keep postinstall but make it optional**: Would require environment variable configuration, less clean than lazy download
+1. **Keep postinstall but make it optional**: This would require environment variable configuration, less clean than lazy download.
 
-2. **Move to a separate package**: Creates confusion and fragments the ecosystem
+2. **Publish separate binaries to npm registry**: This would require a non-trivial amount of refactoring in Electron's release pipeline and would fragment the source of truth for binaries, since Electron is fetched from the GitHub Release artifacts on package-time.
 
-3. **Require manual download**: Too much friction for the majority of users
+3. **Require manual download**: This would cause too much friction for the majority of users.
 
-4. **Download to global cache only**: Doesn't solve the `postinstall` security issue
+4. **Download to global cache only**: This doesn't solve the `postinstall` security issue.
 
 ### What if we don't do this?
 
@@ -170,7 +170,17 @@ This is a breaking change only for specific edge cases. The migration path is:
 
 ## Prior art
 
-Several other tools have moved away from `postinstall` scripts:
+### `ELECTRON_SKIP_BINARY_DOWNLOAD`
+
+The existing [`ELECTRON_SKIP_BINARY_DOWNLOAD`](https://www.electronjs.org/docs/latest/tutorial/installation#postinstall-script)
+environment variable already provides the capability to disable the Electron binary download upon
+`postinstall`.
+
+This environment variable may be removed once this RFC is implemented.
+
+### Other tools
+
+Several other npm packages provide alternatives to `postinstall` scripts:
 
 1. **Playwright**: Moved to lazy download with `npx playwright install` for explicit installation
 2. **Puppeteer**: Provides `PUPPETEER_SKIP_DOWNLOAD` and lazy download options
