@@ -1,11 +1,10 @@
-# RFC 
+# Save/Restore Window State API
+
 - Start Date: 2025-03-20
 - RFC PR: [electron/rfcs#16](https://github.com/electron/rfcs/pull/16)
 - Electron Issues: [electron/electron#526](https://github.com/electron/electron/issues/526)
 - Reference Implementation: https://github.com/electron/electron/tree/gsoc-2025
-- Status: **Proposed**
-
-# Save/Restore Window State API
+- Status: **Active**
 
 Currently, Electron does not have any built-in mechanism for saving and restoring the state of BaseWindows, but this is a very common need for apps that want to feel more native.
 

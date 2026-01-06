@@ -1,12 +1,10 @@
-# RFC Template
+# Corner Smoothing
 
 - Start Date: 2024-11-26
 - RFC PR: [electron/rfcs#0012](https://github.com/electron/rfcs/pull/12)
 - Electron Issues: None <!-- [electron/electron#0000](https://github.com/electron/electron/issues/0000) -->
 - Reference Implementation: [electron/electron#45185](https://github.com/electron/electron/pull/45185)
-- Status: **Active**
-
-# Corner Smoothing
+- Status: **Completed**
 
 ![There is a black rectangle on the left using simple rounded corners, and a blue rectangle on the right using smooth rounded corners. Inbetween those rectangles is a magnified view of the same corner from both rectangles overlapping to show the subtle difference in shape.](../images/0012/Summary.svg)
 
