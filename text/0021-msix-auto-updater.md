@@ -6,7 +6,7 @@
   - [electron/forge#3976](https://github.com/electron/forge/issues/3976)
   - [electron/electron#17722](https://github.com/electron/electron/issues/17722)
 - Reference Implementation: [electron/electron#0000](https://github.com/electron/electron/pull/0000)
-- Status: **Proposed**
+- Status: **Active**
 
 ## Summary
 

@@ -1,12 +1,12 @@
+# API History Schema
+
 - Start Date: 2024-06-11
 - RFC PR: [electron/rfcs#6](https://github.com/electron/rfcs/pull/6)
 - Electron Issues: Related to
 [electron/electron#39877](https://github.com/electron/electron/issues/39877)
 - Reference Implementation:
 [electron/lint-roller (feat/api-history-schema-rfc)](https://github.com/electron/lint-roller/commit/d88115ad9ef0df7966976220adb7846f4338caf3)
-- Status: **Proposed**
-
-# API History Schema
+- Status: **Completed**
 
 ## Summary
 

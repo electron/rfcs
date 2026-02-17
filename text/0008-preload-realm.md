@@ -1,10 +1,10 @@
+# Preload Realm for Service Workers
+
 - Start Date: 2024-01-11
 - RFC PR: [electron/rfcs#8](https://github.com/electron/rfcs/pull/8)
 - Electron Commit: [electron/electron@26da3c5](https://github.com/electron/electron/commit/26da3c5d6ed2af2d8ab8d4ab03b35762549b0a2c)
 - Electron Release: v35.0.0  
 - Status: **Completed**
-
-# Preload Realm for Service Workers
 
 ## Summary
 

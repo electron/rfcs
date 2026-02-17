@@ -1,12 +1,10 @@
-# RFC Template
+# Prompt API support
 
 - Start Date: 2025-04-09
 - RFC PR: [electron/rfcs#14](https://github.com/electron/rfcs/pull/14)
 - Electron Issues:
 - Reference Implementation:
-- Status: **Proposed**
-
-# Prompt API support
+- Status: **Active**
 
 ## Summary
 

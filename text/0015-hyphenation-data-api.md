@@ -1,12 +1,10 @@
-# RFC Template
+# Hyphenation data support
 
 - Start Date: 2025-02-20
 - RFC PR: [electron/rfcs#0015](https://github.com/electron/rfcs/pull/15)
 - Electron Issues: https://github.com/electron/electron/issues/33692
-- Reference Implementation: 
+- Reference Implementation:
 - Status: **Active**
-
-# Hyphenation data support
 
 ## Summary
 
