@@ -141,3 +141,17 @@ We encourage contributors to treat AI tools as a **quality multiplier**, not jus
 We aspire to be a welcoming community that helps new contributors grow. Our guidance: **start small**. Submit contributions you can fully understand, get feedback, and iterate.
 
 As maintainers, we want *your* contributions, not the tools’ outputs. Learning involves taking small steps; passing maintainer feedback directly to an LLM doesn't help anyone grow, and doesn't sustain our community.
+
+---
+
+## Implementation
+
+Once this proposal is accepted, the following steps will bring the policy into practice:
+
+1. **Commit the policy to the Governance repo** — `policy/ai.md` will be the canonical source for the policy text and any future updates.
+
+2. **Update the PR template in `electron/electron`** — Add an acknowledgment checkbox for contributors to confirm they've read and are following this policy. Include an HTML comment in the template that instructs AI models not to check the acknowledgment box autonomously.
+
+3. **Link the policy from `CONTRIBUTING.md`** — Make the policy discoverable to new contributors by referencing it alongside existing contribution guidelines.
+
+4. **Announce the policy** — Post a brief notice so the entire team is aware the policy is in effect.
