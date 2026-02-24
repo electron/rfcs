@@ -11,6 +11,7 @@
   - [electron/electron#11838](https://github.com/electron/electron/issues/11838)
   - [electron/electron#9035](https://github.com/electron/electron/issues/9035)
   - [electron/electron#5078](https://github.com/electron/electron/issues/5078)
+  - [electron/electron#49466](https://github.com/electron/electron/issues/49466)
   - [electron/governance#229](https://github.com/electron/governance/pull/229)
 - Reference Implementation: 
 - Status: **Proposed**
@@ -55,9 +56,9 @@ APIS will be added to work with the selection clipboard:
 * `clipboard.selection.clear()` _Linux_
   * Clears the selection clipboard.  Replaces `clipboard.clear('selection')`.
 * `clipboard.selection.has(format)` _Linux_
-  * Check if a particular format is available on the selection clipboard.  Replaces `clipboard.has(format,'selection)`.
+  * Check if a particular format is available on the selection clipboard.  Replaces `clipboard.has(format,'selection')`.
 * `clipboard.selection.read()` _Linux_
-  * Reads from the selection clipboard following the [Web API clipboard.read](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read) spec.  Replaces `clipboard.read('selection')` and `clipboard.readBuffer('selection)`.
+  * Reads from the selection clipboard following the [Web API clipboard.read](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read) spec.  Replaces `clipboard.read('selection')` and `clipboard.readBuffer('selection')`.
   * Returns a Promise that resolves with an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing the 
     clipboard's contents.
   * Custom MIME types e.g. `electron application/filepath` will be used to allow support of non-standard clipboard formats.  This follows 
@@ -65,10 +66,10 @@ APIS will be added to work with the selection clipboard:
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
   * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
 * `clipboard.selection.readText()` _Linux_
-  * Read text from the selection clipboard. Replaces `clipboard.readText('selection)`.
+  * Read text from the selection clipboard. Replaces `clipboard.readText('selection')`.
 * `clipboard.selection.write(data)​`
   * `data` an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing data to be written to the clipboard.
-  * Writes to the selection clipboard following the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).  Replaces `clipboard.write(data, 'selection)` and `clipboard.writeBuffer(format, buffer, 'selection')`.
+  * Writes to the selection clipboard following the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).  Replaces `clipboard.write(data, 'selection')` and `clipboard.writeBuffer(format, buffer, 'selection')`.
   * `data` an array of [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) objects containing data to be written to the clipboard.
   * This API will be modified to bring into spec compliance with the [Web API `clipboard.write`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write).
   * Returns a Promise which is resolved when the data has been written to the clipboard. The promise is rejected if the clipboard is unable to complete the clipboard access.
@@ -77,7 +78,7 @@ APIS will be added to work with the selection clipboard:
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
   * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.  
 * `clipboard.selection.writeText(text)` _Linux_
-  * Write text to the selection clipboard.  Replaces `clipboard.writeText(text, 'selection)`.
+  * Write text to the selection clipboard.  Replaces `clipboard.writeText(text, 'selection')`.
 
 **APIs to Remove**
 * `clipboard.availableFormats([type])`
@@ -139,6 +140,10 @@ APIS will be added to work with the selection clipboard:
     the W3C proposal for supporting [Web Custom formats for Async Clipboard API](https://github.com/w3c/editing/blob/gh-pages/docs/clipboard-pickling/explainer.md#custom-formats).
     The exception here is that instead of using the `web` prefix, we will use the `electron` prefix to prevent possible collisions with custom web formats.
   * OS specific raw formats will be handled using the custom MIME type `electron application/osclipboard` with a parameter `format` containing the OS specific format, eg `electron application/osclipboard;format="CF_TEXT"` would represent the `CF_TEXT` format on Windows.
+  * [ClipboardItem](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) will be extended to support a new [ClipboardItemOptions](https://w3c.github.io/clipboard-apis/#dictdef-clipboarditemoptions) property `privacyType` which allows writing to the clipboard with the following privacy options:
+    * `no-cloud-clipboard` - The clipboard data should not be uploaded to the cloud.
+    * `no-local-clipboard-history` - The clipboard data should not be stored in the local clipboard history.
+    * `no-display` - The clipboard data should be concealed.
 
 #### Removing the Clipboard API from the renderer
 
