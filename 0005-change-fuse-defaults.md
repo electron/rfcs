@@ -23,8 +23,8 @@ Currently defaults to enabled, we should switch this to default to disabled.
 This flag makes it so that `ELECTRON_RUN_AS_NODE=1` does not cause your Electron app to become a floating node executable. The docs propose safer alternatives, primarily `utilityProcess.fork`.
 
 We should deprecate (log a deprecation warning when `ELECTRON_RUN_AS_NODE` is used) and then swap the default. Proposed timeline is:
-* Deprecate in Electron 33
-* Swap default in Electron 35
+* Deprecate in Electron 43
+* Swap default in Electron 45
 
 ### [`cookieEncryption`](https://www.electronjs.org/docs/latest/tutorial/fuses#cookieencryption)
 
@@ -33,7 +33,7 @@ Current defaults to disabled, we should switch this to default to enabled.
 This flag enables encryption of cookies using user/device specific encryption keys. This is industry standard for cookie storage and only has one drawback, namely that it is a one way transition. Once you have run a version of Electron that has cookie encryption enabled, downgrading is a destructive operation.
 
 We should swap the default without deprecation (it is unclear how to log a deprecation warning in a targeted way) but call it out at the top of the release notes + blog post. Proposed timeline is:
-* Swap default in Electron 33
+* Swap default in Electron 43
 
 ### [`nodeOptions`](https://www.electronjs.org/docs/latest/tutorial/fuses#nodeoptions)
 
@@ -42,8 +42,8 @@ Current defaults to enabled, we should switch this to default to disabled.
 `NODE_OPTIONS` and `NODE_EXTRA_CA_CERTS` are basically unusable by default in Electron apps anyway due to how apps are traditionally launched. (They don't get environment variables by default on macOS for instance).
 
 We should deprecate (log a deprecation warning when one of the env vars is used) and then swap the default. Proposed timeline is:
-* Deprecate in Electron 33
-* Swap default in Electron 35
+* Deprecate in Electron 43
+* Swap default in Electron 45
 
 ### [`nodeCliInspect`](https://www.electronjs.org/docs/latest/tutorial/fuses#nodecliinspect)
 
@@ -56,7 +56,7 @@ This requires adding a new fuse mode, technical implementation withstanding we w
 Given the current fuse schema this should be easily expandable as each fuse has a whole byte of space to store information (currently just using 0/1 but have a full byte).
 
 We should swap the default without deprecation (it is unclear how to log a deprecation warning in a targeted way) but call it out at the top of the release notes + blog post. Proposed timeline is:
-* Swap default in Electron 33
+* Swap default in Electron 43
 
 ### Other fuses of interest
 
