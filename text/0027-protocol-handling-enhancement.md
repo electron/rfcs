@@ -12,7 +12,7 @@ This RFC outlines the need for a better approach to request interception / intro
 
 ## Motivation
 
-Right now, the ability to intercept, introspect, and/or modify HTTP requests is split across the `protocol.handle` API and the `webRequest` handlers. This has lead to some users attempting to use `protocol.handle` as a sort of middleware, using `bypassCustomProtocolHandlers` to forward the intercepted request to the built-in handler. This is the way that option is currently documented. However, it is documented it with the use of `net.fetch`, which can have different semantics than the Chromium browser (especially around redirects). A more aligned "fallback to Chromium" path should be added.
+Right now, the ability to intercept, introspect, and/or modify HTTP requests is split across the `protocol.handle` API and the `webRequest` handlers. This has lead to some users attempting to use `protocol.handle` as a sort of middleware, using `bypassCustomProtocolHandlers` to forward the intercepted request to the built-in handler. This is the way that option is currently documented. However, it is documented it with the use of `net.fetch`, which can have different semantics than the Chromium browser (especially around redirects). A more-aligned "fallback to Chromium" path should be added.
 
 The simplfied `Request`->`Response` flow has also lead to some users attempting to set cookies merely by returning a `Response` with their desired `Set-Cookie` header. Things like this may, currently, be better handled with `webRequest` handlers. However, that splits up behavior when a user may want to be able to do all of these things in a single API.
 
