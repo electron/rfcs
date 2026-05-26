@@ -1,7 +1,7 @@
 # GuestPage: main-process-driven embedding of web content into a host page
 
 - Start Date: 2026-05-26
-- RFC PR: [electron/rfcs#0000](https://github.com/electron/rfcs/pull/0000)
+- RFC PR: [electron/rfcs#0030](https://github.com/electron/rfcs/pull/0030)
 - Electron Issues: N/A
 - Reference Implementation: N/A
 - Status: **Proposed**
