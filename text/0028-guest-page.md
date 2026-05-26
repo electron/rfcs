@@ -486,8 +486,8 @@ The tag's problems are structural: creation and control are renderer-initiated, 
 surface is a string attribute parsed without an allowlist, and the safety story depends on every
 app implementing `will-attach-webview` correctly. Hardening it further still leaves a
 renderer-reachable capability that most apps should not grant, and the tag still has to be
-re-implemented for MPArch. Building the main-process-driven API first, and later reimplementing
-the tag on top of it (or deprecating the tag), is the more honest sequencing.
+re-implemented for MPArch. Building the main-process-driven API first, then deprecating and
+removing the tag, is the more honest sequencing.
 
 ### Alternative: userland (placeholder element + IPC + `setBounds`)
 
@@ -546,20 +546,16 @@ To resolve during implementation, before stabilization:
 
 Out of scope for this RFC:
 
-- Reimplementing or deprecating the `<webview>` tag (future RFC once `GuestPage` is stable).
+- Deprecating and removing the `<webview>` tag (future RFC once `GuestPage` is stable).
 - Attaching existing `webContents`/`WebContentsView` objects into host pages.
 - An anchor-element bounds-syncing mechanism for native `WebContentsView`s.
 
 ## Future possibilities
 
-- **`<webview>` as a shim.** Once `GuestPage` is stable, the tag could be reimplemented as a thin,
-  opt-in renderer element whose only job is to create a slot and ask the main process (via a
-  documented, app-controlled handler) to create and attach a `GuestPage` — or simply deprecated in
-  its favor.
+- **`<webview>` deprecation and removal.** Once `GuestPage` is stable and migration guidance
+  exists, deprecate the tag and remove it in a later major version (a separate RFC).
 - **Controlled-Frame-style capabilities** (request interception scoped to the guest, content
   scripts) built on the per-guest session story.
 - **Per-guest devtools, capture, and printing** as the MPArch delegate surface fills out.
-- **A complementary anchor-element API for `WebContentsView`** for apps that want native-view
-  semantics with CSS-driven placement and can accept its stacking/clipping limitations.
 - **Slot helpers** — an official, capability-free custom element (`<guest-slot>`) published as a
   package for ergonomics and accessibility defaults around the placeholder iframe.
