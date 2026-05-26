@@ -69,8 +69,8 @@ slated for removal.
 This has two consequences:
 
 - Electron's `<webview>` tag will need substantial rework regardless of this RFC, and some of that
-  rework (per-guest preferences and preload delivery, guest storage partitioning) is shared with
-  this proposal.
+  rework (per-guest preferences and preload delivery, guest session handling) is shared with this
+  proposal.
 - Any *new* embedding API must be specified so that it does not promise things only the old
   architecture can deliver. In particular, it must not promise that the embedded content *is* a
   `WebContents`.
@@ -370,7 +370,7 @@ combination (Chromium's own `<webview>` has the same restriction), and `noopener
 
 ### Sessions and storage
 
-Three configurations, in decreasing order of guarantee:
+Two configurations, in decreasing order of guarantee:
 
 1. **Host's session (default).** Always supported. The guest shares the host's cookie jar and
    storage; isolation, if desired, comes from the web platform (different origins) rather than
@@ -381,23 +381,12 @@ Three configurations, in decreasing order of guarantee:
    `GuestPageHolderImpl` constructs the guest frame tree with the *owner* WebContents'
    `BrowserContext`, and navigation-time consistency checks (and storage-partition resolution)
    assume the guest's `SiteInstance` belongs to that same `BrowserContext`. Continuing to support
-   arbitrary cross-session guests therefore requires either an upstream change (have
-   `GuestPageHolder` honor the `BrowserContext` of the `SiteInstance` it is given) or a different
-   Electron-side model (next item). This is called out in *Unresolved questions*; the API shape
-   (`session` option) does not change either way, but its documented support level might.
-3. **Isolated storage within the host's session (possible future model).** Chromium's own answer
-   to guest storage is not "another profile" but "another `StoragePartition` in the same profile":
-   guests get a `StoragePartitionConfig` and with it an isolated cookie jar, localStorage,
-   IndexedDB, service workers, and cache, while sharing the profile-level configuration. Electron
-   has never used non-default storage partitions — an Electron `Session` *is* a `BrowserContext`
-   plus its default partition — so adopting this model would require a small new API surface for
-   per-partition storage management (at minimum cookies and clear-data) and a data-migration story
-   for existing `<webview>` partitions. It would, however, remove the two Chromium patches Electron
-   carries today solely because its webview guests violate the "guest WebContents ⇔ guest
-   SiteInstance with a fixed non-default StoragePartition" invariant, and it matches what MPArch
-   supports natively.
+   arbitrary cross-session guests therefore requires an upstream change (have `GuestPageHolder`
+   honor the `BrowserContext` of the `SiteInstance` it is given). This is called out in
+   *Unresolved questions*; the API shape (`session` option) does not change either way, but its
+   documented support level might.
 
-In all three configurations the decision is made by the main process. The host renderer can no
+In both configurations the decision is made by the main process. The host renderer can no
 longer choose which cookie jar embedded content runs against, which closes the `<webview>`
 `partition`-attribute footgun (a compromised embedder minting arbitrary in-memory sessions).
 
@@ -538,11 +527,9 @@ participating in Chromium's guest plumbing; it cannot be built outside Electron 
 To resolve during the RFC process:
 
 1. **Cross-session guests under MPArch.** Should Electron (a) pursue an upstream change so
-   `GuestPageHolder` honors the `BrowserContext` of the `SiteInstance` it is given, (b) plan to
-   model guest isolation as `StoragePartitionConfig`s within the host's session (with a minimal
-   per-partition storage API), or (c) restrict the `session` option to the host's session when the
-   MPArch backend is active? This affects documentation and the `<webview>` migration more than it
-   affects this API's shape.
+   `GuestPageHolder` honors the `BrowserContext` of the `SiteInstance` it is given, or (b)
+   restrict the `session` option to the host's session when the MPArch backend is active? This
+   affects documentation and the `<webview>` migration more than it affects this API's shape.
 2. **Popup ergonomics.** Is `{ action: 'guest' }` + `guest-created` the right surface, or should
    the handler return the new `GuestPage` directly? How long may a pending popup stay unattached
    before Electron warns?
@@ -570,7 +557,7 @@ Out of scope for this RFC:
   documented, app-controlled handler) to create and attach a `GuestPage` — or simply deprecated in
   its favor.
 - **Controlled-Frame-style capabilities** (request interception scoped to the guest, content
-  scripts) built on the per-guest session/partition story.
+  scripts) built on the per-guest session story.
 - **Per-guest devtools, capture, and printing** as the MPArch delegate surface fills out.
 - **A complementary anchor-element API for `WebContentsView`** for apps that want native-view
   semantics with CSS-driven placement and can accept its stacking/clipping limitations.
