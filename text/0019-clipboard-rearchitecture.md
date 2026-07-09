@@ -13,8 +13,8 @@
   - [electron/electron#5078](https://github.com/electron/electron/issues/5078)
   - [electron/electron#49466](https://github.com/electron/electron/issues/49466)
   - [electron/governance#229](https://github.com/electron/governance/pull/229)
-- Reference Implementation: 
-- Status: **Proposed**
+- Reference Implementation:
+- Status: **Active**
 
 # Clipboard Module Rearchitecture
 

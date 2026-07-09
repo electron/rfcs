@@ -4,7 +4,9 @@
 - RFC PR: [electron/rfcs#16](https://github.com/electron/rfcs/pull/16)
 - Electron Issues: [electron/electron#526](https://github.com/electron/electron/issues/526)
 - Reference Implementation: https://github.com/electron/electron/tree/gsoc-2025
-- Status: **Active**
+- Electron Commit: [electron/electron@154d66f](https://github.com/electron/electron/commit/154d66f4ab264c1324fed889a2fe3374dfd291af)
+- Electron Release: v45.0.0
+- Status: **Completed**
 
 Currently, Electron does not have any built-in mechanism for saving and restoring the state of BaseWindows, but this is a very common need for apps that want to feel more native.
 
