@@ -16,7 +16,18 @@ directories for the `Electron Framework`, Helper plugins, and app resources.
 In enterprise application deployments, it's possible for update scripts or
 installers to overwrite the contents of an already running application. In such
 cases, an attempt to spawn Electron's child process helpers may result in a
-catastrophic action which crashes the application due to incompatible ABIs.
+catastrophic action which crashes the application due to ABI incompatibilities.
+
+This is a problem unique to Electron due to its Mac bundle layout. Its binaries
+and resources are included under the following directories without any versioning:
+- `Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A`
+- `Electron.app/Contents/Frameworks/Electron Helper*.app`
+- `Electron.app/Contents/Resources/*.asar`
+
+In such scenarios, apps utilizing ASAR integrity will also risk a crash when
+spawning utilityProcess scripts in their app.asar.
+
+### Electron vs Chrome
 
 <details>
 <summary>Electron.app bundle layout</summary>
