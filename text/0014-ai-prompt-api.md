@@ -4,7 +4,9 @@
 - RFC PR: [electron/rfcs#14](https://github.com/electron/rfcs/pull/14)
 - Electron Issues:
 - Reference Implementation:
-- Status: **Active**
+- Electron Commit: [electron/electron@d0c75f9](https://github.com/electron/electron/commit/d0c75f90ad7f145ce7e8ecd91edba5831f89226c)
+- Electron Release: v45.0.0
+- Status: **Completed**
 
 ## Summary
 

@@ -2,7 +2,7 @@
 
 - Start Date: 2025-12-17
 - RFC PR: [electron/rfcs#26](https://github.com/electron/rfcs/pull/26)
-- Status: **Proposed**
+- Status: **Completed**
 
 > [!NOTE]
 > RFC meta-text is first, then [proposed policy text](#proposed-ai-tool-policy) follows.
