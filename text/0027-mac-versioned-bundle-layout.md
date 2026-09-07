@@ -14,7 +14,7 @@ directories for the `Electron Framework`, Helper plugins, and app resources.
 <!-- Why should we do this? What use cases does it support? What is the expected outcome? -->
 
 In enterprise application deployments, it's possible for update scripts or
-installers to overwrite the contents of an already running application. In such
+installers to overwrite the contents of a running application. In such
 cases, an attempt to spawn Electron's child process helpers may result in a
 catastrophic action which crashes the application due to ABI incompatibilities.
 
@@ -78,7 +78,7 @@ Electron.app/
 
 For comparison, Google Chrome uses a versioned layout where the version
 directory is named after the actual version number, multiple versions are
-retained side-by-side, and *all* helper apps live inside the versioned
+retained side-by-side, and _all_ helper apps live inside the versioned
 framework directory:
 
 <details>
@@ -136,6 +136,7 @@ Google Chrome.app/
 
 ## Guide-level explanation
 
+<!--
 Explain the feature as if it were already implemented in Electron and you were teaching it to
 an Electron app developer.
 
@@ -151,9 +152,54 @@ This section should:
 
 When writing this section, make sure to clearly account for API differences or considerations for
 Windows, macOS, and Linux.
+-->
+
+Electron applications distributed on macOS make use of [frameworks](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPFrameworks/Concepts/WhatAreFrameworks.html#//apple_ref/doc/uid/20002303-BBCEIJFI) to include
+resources shared among various Chromium helper executables. The primary example
+being `Electron Framework.framework`.
+
+> A framework is a hierarchical directory that encapsulates shared resources, such as a dynamic shared library, nib files, image files, localized strings, header files, and reference documentation in a single package. [...]
+> A framework is also a bundle and its contents can be accessed using Core Foundation Bundle Services or the Cocoa NSBundle class.
+
+The structure of these framework bundles allows for a version which can be used
+when an update may be incompatible with the previous version. From [Anatomy of Framework Bundles](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPFrameworks/Concepts/FrameworkAnatomy.html#//apple_ref/doc/uid/20002253-99920):
+
+> Framework bundles use a bundle structure different from the bundle structure used by applications. The structure for frameworks is based on an earlier bundle format, and allows for multiple versions of the framework code and header files to be stored inside the bundle. This type of bundle is known as a versioned bundle. Supporting multiple versions of a framework allows older applications to continue running even as the framework binary continues to evolve.
+
+Electron elects to use a hardcoded version which is unchanged across updates.
+This works fine for most updaters, but can breakdown in cases where the contents
+of a running application are overwritten.
+
+### Squirrel.Mac
+
+The primary distribution method for delivering updates to Electron applications.
+When used, updates are installed _after_ the application terminates ([reference](https://github.com/squirrel/squirrel.mac#installing-updates)). A running
+application will never attempt to load resources from the pending update due to
+this design.
+
+### PKG Installer
+
+A .pkg installer can be initiated manually by an end user or run silently by any
+IT distribution scripts.
+
+When initiated silently, scripts may overwrite the contents of Electron's
+framework bundle while the application is running. This can lead to catastrophic
+results due to [Chromium's multi-process architecture](https://www.chromium.org/developers/design-documents/multi-process-architecture/). An
+updated version of its child processes can lead to a crash due to incompatible
+architecture.
+
+Similarly, reading and launching `utilityProcess` helpers from an ASAR file with
+integrity checks enabled may force a crash.
+
+### Introducing bundle versioning
+
+Rather than hardcoding framework versions, Electron will adopt Chromium's
+versioned layout structure. Each update will use a version directory with the
+semver prefix.
 
 ## Reference-level explanation
 
+<!--
 This is the technical portion of the RFC. Explain the design in sufficient detail that:
 
 - Its interaction with other features is clear.
@@ -163,10 +209,21 @@ This is the technical portion of the RFC. Explain the design in sufficient detai
 
 The section should return to the examples given in the previous section, and explain more fully how
 the detailed proposal makes those examples work.
+-->
+
+An initial proof of concept changeset was written to test the viability of a
+versioned bundle layout. \
+https://github.com/electron/electron/compare/main...build/versioned-bundle
+
+TODO: should we use a fuse to determine whether to use new bundled layout?
+Would this work given the BUILD.gn changes?
+
+TODO: mention marshallofsound's PRs to retain file handles of asar files
 
 ## Drawbacks
 
-Why should we *not* do this?
+- May require changes to downstream packagers
+- App configurations involving copying files into the bundle may break
 
 ## Rationale and alternatives
 
@@ -179,6 +236,7 @@ Why should we *not* do this?
 
 ## Prior art
 
+<!--
 Discuss prior art, both the good and the bad, in relation to this proposal. A few examples of what
 this can include are:
 
@@ -191,14 +249,14 @@ This section is intended to encourage you as an author to think about the lesson
 implementations to provide readers of your RFC with a fuller picture. If there is no prior art,
 that is fine - your ideas are interesting to us whether they are brand new or if it is an
 adaptation from other technologies.
+-->
+
+Google Chrome ships with a versioned macOS bundle today.
 
 ## Unresolved questions
 
-- What parts of the design do you expect to resolve through the RFC process before this gets merged?
-- What parts of the design do you expect to resolve through the implementation of this feature
-  before stabilization?
-- What related issues do you consider out of scope for this RFC that could be addressed in the
-  future independently of the solution that comes out of this RFC?
+- Is it common for applications to allowlist helper executable paths which
+  would require updating (e.g. anti-virus)?
 
 ## Future possibilities
 
