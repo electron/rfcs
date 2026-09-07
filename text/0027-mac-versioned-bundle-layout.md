@@ -20,6 +20,7 @@ catastrophic action which crashes the application due to ABI incompatibilities.
 
 This is a problem unique to Electron due to its Mac bundle layout. Its binaries
 and resources are included under the following directories without any versioning:
+
 - `Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A`
 - `Electron.app/Contents/Frameworks/Electron Helper*.app`
 - `Electron.app/Contents/Resources/*.asar`
@@ -251,15 +252,20 @@ that is fine - your ideas are interesting to us whether they are brand new or if
 adaptation from other technologies.
 -->
 
-Google Chrome ships with a versioned macOS bundle today.
+Google Chrome ships with a versioned macOS bundle layout.
+
+- [Restructure Chrome Mac's bundle - Chromium issues](https://issues.chromium.org/issues/40625738)
+- [new_mac_bundle_structure upstream commit](https://chromium.googlesource.com/chromium/src/%2B/49937668c33652be11183252d90605e521839eff%5E%21/)
 
 ## Unresolved questions
 
 - Is it common for applications to allowlist helper executable paths which
   would require updating (e.g. anti-virus)?
+- Any risks to retriggering permission prompts by changing the bundle layout?
 
 ## Future possibilities
 
+<!--
 Think about what the natural extension and evolution of your proposal would be and how it would
 affect the project as a whole in a holistic way. Try to use this section as a tool to more fully
 consider all possible interactions with the project in your proposal.
@@ -273,3 +279,4 @@ cannot think of anything.
 Note that having something written down in the future possibilities section is not a reason to
 accept the current or a future RFC; such notes should be in the section on motivation or
 rationale in this or subsequent RFCs. The section merely provides additional information.
+-->
