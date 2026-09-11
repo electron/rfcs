@@ -1,9 +1,9 @@
 # apiBridge: Pass APIs from the main process to web pages
 
 - Start Date: 2026-09-11
-- RFC PR: [electron/rfcs#0000](https://github.com/electron/rfcs/pull/0000)
+- RFC PR: [electron/rfcs#32](https://github.com/electron/rfcs/pull/32)
 - Electron Issues: [electron/electron#0000](https://github.com/electron/electron/issues/0000)
-- Reference Implementation: [electron/electron#0000](https://github.com/electron/electron/pull/0000)
+- Reference Implementation: [electron/electron#53832](https://github.com/electron/electron/pull/53832)
 - Status: **Proposed**
 
 ## Summary
