@@ -840,19 +840,20 @@ Each event also has its duration. The events show in `contentTracing` recordings
 
 ### Performance
 
-These numbers come from a Linux testing build. The calls come from the page. "Before" is
+These numbers come from the reference implementation, in a Linux testing build. The calls come
+from the page. "Before" is
 `ipcRenderer.invoke` or `sendSync` exposed through `contextBridge`, which is the usual pattern.
 "apiBridge" calls `navigator.electron.bench` directly. Each number is the median of five rounds, in
 microseconds for each operation.
 
 | Operation | Before | apiBridge | Faster |
 | --- | ---: | ---: | ---: |
-| Async call, one at a time | 158 | 115 | 1.4× |
-| Async call, 500 in flight | 67 | 26 | 2.5× |
-| Echo a ~5 KB object | 1,974 | 470 | 4.2× |
-| Sync call | 151 | 110 | 1.4× |
-| Read state (`sendSync` vs `store.get()`) | 148 | 0.57 | 260× |
-| Event, main to page | 24 | 21 | 1.2× |
+| Async call, one at a time | 165 | 115 | 1.4× |
+| Async call, 500 in flight | 68 | 27 | 2.5× |
+| Echo a ~5 KB object | 1,880 | 468 | 4.0× |
+| Sync call | 147 | 107 | 1.4× |
+| Read state (`sendSync` vs `store.get()`) | 149 | 0.47 | ~320× |
+| Event, main to page | 24 | 20 | 1.2× |
 
 Objects get the largest improvement, because apiBridge serializes them one time, in C++.
 `contextBridge` first copies them across worlds. Stores get an improvement because they send no
