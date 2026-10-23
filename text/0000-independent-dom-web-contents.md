@@ -1,8 +1,8 @@
 # Independent WebContents lifetime for DOM embedding
 
 - Start Date: 2026-10-23
-- RFC PR: To be assigned
-- Electron Issues: To be assigned
+- RFC PR: [electron/rfcs#34](https://github.com/electron/rfcs/pull/34)
+- Electron Issues: [electron/electron#55248](https://github.com/electron/electron/issues/55248)
 - Reference Implementation: [electron/electron#55135](https://github.com/electron/electron/pull/55135) (closed experimental prototype)
 - Status: **Proposed**
 
